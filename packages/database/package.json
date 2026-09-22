@@ -1,0 +1,28 @@
+{
+  "name": "@bilgenos/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@bilgenos/contracts": "*",
+    "@bilgenos/domain": "*",
+    "@bilgenos/authorization": "*"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.4.1",
+    "prisma": "^6.4.1",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@bilgenos/ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@bilgenos/contracts": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@bilgenos/root",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BilgenOS — The Education Operating System",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "node --test tests/*.test.ts",
+    "test:milestone1": "node --test tests/milestone1.test.ts",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "next": "^16.3.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}
