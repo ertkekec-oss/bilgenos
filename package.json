@@ -9,19 +9,17 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build --workspace=@bilgenos/contracts && npm run build --workspace=@bilgenos/domain && npm run build --workspace=@bilgenos/authorization && npm run build --workspace=@bilgenos/database && npm run build --workspace=@bilgenos/ui",
+    "build": "npm run build:packages && npm run build --workspace=@bilgenos/web",
     "test": "node --test tests/*.test.ts",
     "test:milestone1": "node --test tests/milestone1.test.ts",
+    "test:milestone2": "node --test tests/milestone2.test.ts",
+    "test:milestone3": "node --test tests/milestone3.test.ts",
     "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
     "prettier": "^3.5.1",
     "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "next": "^16.3.6",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
   }
 }
