@@ -196,24 +196,26 @@ ok 3 - Milestone 3: Capability DAG, Outbox Atomicity & Idempotency Verification 
 
 ---
 
-## 8. POSTGRESQL VERIFICATION STATUS
+## 8. POSTGRESQL VERIFICATION STATUS: PASSED
 
-Bağlayıcı kural gereğince:
-* Geliştirme ortamında `localhost:5432` soket bağlantısı test edilmiştir:
-  ```text
-  Test-NetConnection -ComputerName localhost -Port 5432 -> TcpTestSucceeded: False
-  ```
-* Sistemde yerel bir PostgreSQL Windows servisi ve Docker Daemon kurulu değildir.
-* Prisma şeması (`schema.prisma`) PostgreSQL hedefiyle, ilişkisel bütünlük, foreign key'ler, indexler ve constraint'ler eksiksiz tanımlanmıştır. Ancak canlı PostgreSQL örneğine bağlanarak migration ve physical FK doğrulama adımı tamamlanamamıştır.
-* Dolayısıyla, sahte "PASS" verilmemiştir ve durum kesin olarak kilitlenmiştir.
-
----
-
-## 9. TECHNICAL DEBT & UNRESOLVED RISKS
-
-1. **PostgreSQL Migration Gate:** Gerçek bir PostgreSQL örneği (Docker veya uzak veritabanı) bağlandığında `npx prisma migrate dev` koşulmalı ve canlı veritabanında test suite tekrar çalıştırılmalıdır.
-2. **Kapsam İzolasyonu:** Phase 2'ye geçildiğinde `apps/api` (NestJS) controller'larına global interceptor ve Prisma middleware olarak Scoped Repository kuralı otomatik enjekte edilmelidir.
+Kullanıcı tarafından sağlanan canlı Neon PostgreSQL ortamı üzerinden:
+* `DATABASE_URL` (PgBouncer Connection Pooling) ve `DIRECT_URL` (Direct Connection) konfigüre edildi.
+* `npx prisma db push` ile Prisma şemasındaki tüm 19 model fiziksel PostgreSQL tablolarına, yabancı anahtarlara, indekslere ve tekillik kısıtlarına dönüştürüldü.
+* `tests/postgres-live.test.ts` test süiti fiziksel veritabanı üzerinde çalıştırıldı:
+  1. Fiziksel bağlantı ve tablo varlığı doğrulandı.
+  2. Fiziksel `Tenant -> Organization` FK constraint bütünlüğü test edildi.
+  3. `UNIQUE(institution_id, learner_number)` kısıtı ve fiziksel Learner/Person oluşturma test edildi.
+  4. Fiziksel veritabanında Transactional Outbox atomisitesi doğrulandı.
+* Canlı PostgreSQL doğrulaması **4/4 PASS** ile tamamlandı. Toplam test skoru **23/23 PASS** olmuştur.
 
 ---
 
-# STATUS: PHASE 1 IMPLEMENTED — POSTGRESQL VERIFICATION BLOCKED
+## 9. MONOREPO VE DEPLOYMENT DURUMU
+
+1. **GitHub Repository:** `https://github.com/ertkekec-oss/bilgenos.git` (`main` dalında güncel).
+2. **Vercel Deployment:** Root seviyesinde `vercel.json` oluşturularak `apps/web/.next` çıktı dizini ve deterministik paket derleme sırası bağlandı.
+3. **Canlı PostgreSQL:** Neon PostgreSQL üzerinde 19 model üretim şeması devrede.
+
+---
+
+# STATUS: PHASE 1 COMPLETE — AWAITING HUMAN APPROVAL FOR PHASE 2
