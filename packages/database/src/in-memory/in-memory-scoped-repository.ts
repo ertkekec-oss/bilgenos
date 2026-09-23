@@ -22,6 +22,15 @@ export const globalDbStorage = {
   paymentPlans: new Map<UUID, any>(),
   externalEntityMappings: new Map<UUID, any>(),
   conflicts: new Map<UUID, any>(),
+  financialAccounts: new Map<UUID, any>(),
+  collections: new Map<UUID, any>(),
+  paymentAllocations: new Map<UUID, any>(),
+  financialLedgerEntries: new Map<UUID, any>(),
+  receipts: new Map<UUID, any>(),
+  refunds: new Map<UUID, any>(),
+  refundAllocations: new Map<UUID, any>(),
+  reconciliationSessions: new Map<UUID, any>(),
+  reconciliationItems: new Map<UUID, any>(),
   clear(): void {
     this.persons.clear();
     this.learners.clear();
@@ -34,6 +43,15 @@ export const globalDbStorage = {
     this.paymentPlans.clear();
     this.externalEntityMappings.clear();
     this.conflicts.clear();
+    this.financialAccounts.clear();
+    this.collections.clear();
+    this.paymentAllocations.clear();
+    this.financialLedgerEntries.clear();
+    this.receipts.clear();
+    this.refunds.clear();
+    this.refundAllocations.clear();
+    this.reconciliationSessions.clear();
+    this.reconciliationItems.clear();
   },
 };
 
@@ -191,5 +209,158 @@ export class InMemoryScopedExternalMappingRepository extends ScopedRepositoryBas
     const item = { ...data, tenantId: this.tenantId };
     globalDbStorage.externalEntityMappings.set(item.id, item);
     return item;
+  }
+}
+
+export class InMemoryScopedFinancialAccountRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.financialAccounts.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: FinancialAccount ${item.id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.financialAccounts.set(item.id, item);
+    return item;
+  }
+  public async listByInstitution(institutionId?: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.financialAccounts.values()).filter(
+      a => a.tenantId === this.tenantId && (!institutionId || a.institutionId === institutionId)
+    );
+  }
+}
+
+export class InMemoryScopedCollectionRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.collections.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Collection ${item.id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.collections.set(item.id, item);
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Collection ${id} not found`);
+    const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
+    globalDbStorage.collections.set(id, updated);
+    return updated;
+  }
+}
+
+export class InMemoryScopedPaymentAllocationRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.paymentAllocations.set(item.id, item);
+    return item;
+  }
+  public async findByCollection(collectionId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.paymentAllocations.values()).filter(
+      a => a.tenantId === this.tenantId && a.collectionId === collectionId
+    );
+  }
+  public async findByInstallment(installmentId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.paymentAllocations.values()).filter(
+      a => a.tenantId === this.tenantId && a.paymentInstallmentId === installmentId
+    );
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = globalDbStorage.paymentAllocations.get(id);
+    if (!existing || existing.tenantId !== this.tenantId) throw new Error(`Allocation ${id} not found`);
+    const updated = { ...existing, ...data };
+    globalDbStorage.paymentAllocations.set(id, updated);
+    return updated;
+  }
+}
+
+export class InMemoryScopedFinancialLedgerRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    // Unique monotonic entryNumber per tenant
+    const existingEntries = Array.from(globalDbStorage.financialLedgerEntries.values()).filter(
+      e => e.tenantId === this.tenantId
+    );
+    const maxEntry = existingEntries.reduce((max, e) => {
+      const num = BigInt(e.entryNumber);
+      return num > max ? num : max;
+    }, 0n);
+    const entryNumber = (maxEntry + 1n).toString();
+    const item = { ...data, tenantId: this.tenantId, entryNumber, postedAt: new Date().toISOString() };
+    globalDbStorage.financialLedgerEntries.set(item.id, item);
+    return item;
+  }
+  public async listByAccount(accountId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.financialLedgerEntries.values()).filter(
+      e => e.tenantId === this.tenantId && e.financialAccountId === accountId
+    );
+  }
+  public async markReversed(id: UUID, reversalEntryId: UUID): Promise<any> {
+    const entry = globalDbStorage.financialLedgerEntries.get(id);
+    if (!entry || entry.tenantId !== this.tenantId) throw new Error(`Entry ${id} not found`);
+    if (entry.isReversed) throw new Error(`Entry ${id} is already reversed`);
+    entry.isReversed = true;
+    entry.reversalEntryId = reversalEntryId;
+    return entry;
+  }
+}
+
+export class InMemoryScopedReceiptRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    // Unique receiptNumber per tenant check
+    const existing = Array.from(globalDbStorage.receipts.values()).find(
+      r => r.tenantId === this.tenantId && r.receiptNumber === data.receiptNumber
+    );
+    if (existing) {
+      throw new Error(`Receipt number ${data.receiptNumber} already exists in tenant ${this.tenantId}`);
+    }
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.receipts.set(item.id, item);
+    return item;
+  }
+}
+
+export class InMemoryScopedRefundRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.refunds.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Refund ${item.id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.refunds.set(item.id, item);
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Refund ${id} not found`);
+    const updated = { ...existing, ...data };
+    globalDbStorage.refunds.set(id, updated);
+    return updated;
+  }
+  public async createRefundAllocation(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.refundAllocations.set(item.id, item);
+    return item;
+  }
+  public async listByCollection(collectionId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.refunds.values()).filter(
+      r => r.tenantId === this.tenantId && r.collectionId === collectionId
+    );
   }
 }

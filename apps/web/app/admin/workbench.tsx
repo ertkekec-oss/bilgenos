@@ -23,11 +23,162 @@ type ActiveTab =
   | 'COMMERCIAL'
   | 'PAYMENTS'
   | 'INTEGRATION'
+  | 'FINANCE_ACCOUNTS'
+  | 'COLLECTIONS'
+  | 'LEDGER'
+  | 'RECONCILIATION'
   | 'CAPABILITIES'
   | 'AUDIT';
 
 export function CoreAdministrationWorkbench(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<ActiveTab>('CAPABILITIES');
+
+  // Phase 3 Finance Seed Data (Excel-grade Light Corporate)
+  const [financialAccounts] = useState([
+    {
+      id: 'acc-1',
+      name: 'Garanti BBVA Ana Tahsilat Hesabı',
+      accountType: 'BANK',
+      currency: 'TRY',
+      accountNumber: '****3821',
+      iban: 'TR** **** **** **** **** **38 21',
+      bankName: 'Garanti BBVA',
+      branchName: 'Levent Kurumsal',
+      projectedBalance: '1.250.000,00 ₺',
+      isActive: true,
+    },
+    {
+      id: 'acc-2',
+      name: 'Merkez Kampüs Muhasebe Kasası',
+      accountType: 'CASH',
+      currency: 'TRY',
+      accountNumber: 'KASA-01',
+      iban: '-',
+      bankName: '-',
+      branchName: '-',
+      projectedBalance: '48.500,00 ₺',
+      isActive: true,
+    },
+    {
+      id: 'acc-3',
+      name: 'İyzico Sanal POS Takas Hesabı',
+      accountType: 'CARD_CLEARING',
+      currency: 'TRY',
+      accountNumber: 'POS-CLEAR-01',
+      iban: '-',
+      bankName: 'İyzico / Akbank',
+      branchName: 'Online Gateway',
+      projectedBalance: '420.000,00 ₺',
+      isActive: true,
+    },
+  ]);
+
+  const [collections] = useState([
+    {
+      id: 'col-101',
+      referenceNumber: 'TAH-2026-00084',
+      financialResponsible: 'Mehmet Yılmaz (Veli)',
+      accountName: 'Garanti BBVA Ana Tahsilat',
+      paymentMethod: 'BANK_TRANSFER',
+      amountFormatted: '120.000,00 ₺',
+      allocatedFormatted: '120.000,00 ₺',
+      unallocatedFormatted: '0,00 ₺',
+      status: 'CONFIRMED',
+      allocationState: 'FULLY_ALLOCATED',
+      receiptNumber: 'MKB-2026-00101',
+      collectedAt: '2026-09-22 14:30',
+    },
+    {
+      id: 'col-102',
+      referenceNumber: 'TAH-2026-00085',
+      financialResponsible: 'Ayşe Demir (Veli)',
+      accountName: 'Merkez Kampüs Muhasebe Kasası',
+      paymentMethod: 'CASH',
+      amountFormatted: '35.000,00 ₺',
+      allocatedFormatted: '25.000,00 ₺',
+      unallocatedFormatted: '10.000,00 ₺',
+      status: 'CONFIRMED',
+      allocationState: 'PARTIALLY_ALLOCATED',
+      receiptNumber: 'MKB-2026-00102',
+      collectedAt: '2026-09-22 15:10',
+    },
+    {
+      id: 'col-103',
+      referenceNumber: 'TAH-2026-00086',
+      financialResponsible: 'Burak Kaya (Veli)',
+      accountName: 'İyzico Sanal POS Takas',
+      paymentMethod: 'CREDIT_CARD',
+      amountFormatted: '60.000,00 ₺',
+      allocatedFormatted: '0,00 ₺',
+      unallocatedFormatted: '60.000,00 ₺',
+      status: 'PENDING',
+      allocationState: 'UNALLOCATED',
+      receiptNumber: 'BEKLEMEDE',
+      collectedAt: '2026-09-23 09:15',
+    },
+  ]);
+
+  const [ledgerEntries] = useState([
+    {
+      id: 'led-1',
+      entryNumber: '00000001',
+      accountName: 'Garanti BBVA Ana Tahsilat',
+      entryType: 'MONEY_IN',
+      amountFormatted: '+120.000,00 ₺',
+      sourceType: 'COLLECTION',
+      reference: 'TAH-2026-00084',
+      description: 'Öğrenci Yıllık Eğitim Taksit Tahsilatı',
+      isReversed: false,
+      postedAt: '2026-09-22 14:30:12',
+    },
+    {
+      id: 'led-2',
+      entryNumber: '00000002',
+      accountName: 'Merkez Kampüs Muhasebe Kasası',
+      entryType: 'MONEY_IN',
+      amountFormatted: '+35.000,00 ₺',
+      sourceType: 'COLLECTION',
+      reference: 'TAH-2026-00085',
+      description: 'Nakit Peşinat Tahsilatı',
+      isReversed: false,
+      postedAt: '2026-09-22 15:10:05',
+    },
+    {
+      id: 'led-3',
+      entryNumber: '00000003',
+      accountName: 'Merkez Kampüs Muhasebe Kasası',
+      entryType: 'MONEY_OUT',
+      amountFormatted: '-5.000,00 ₺',
+      sourceType: 'REFUND',
+      reference: 'REF-2026-00012',
+      description: 'Kayıt İptali / Fazla Tahsilat İadesi (Maker-Checker Onaylı)',
+      isReversed: false,
+      postedAt: '2026-09-22 16:45:00',
+    },
+  ]);
+
+  const [reconciliationSessions] = useState([
+    {
+      id: 'rec-1',
+      accountName: 'Garanti BBVA Ana Tahsilat',
+      sourceType: 'BANK',
+      sessionDate: '2026-09-22',
+      externalClosing: '1.250.000,00 ₺',
+      ledgerClosing: '1.250.000,00 ₺',
+      discrepancy: '0,00 ₺',
+      status: 'MATCHED',
+    },
+    {
+      id: 'rec-2',
+      accountName: 'İyzico Sanal POS Takas Hesabı',
+      sourceType: 'CARD',
+      sessionDate: '2026-09-22',
+      externalClosing: '422.500,00 ₺',
+      ledgerClosing: '420.000,00 ₺',
+      discrepancy: '+2.500,00 ₺',
+      status: 'DISCREPANCY',
+    },
+  ]);
 
   // Sample seed state demonstrating the system
   const [institutions] = useState<InstitutionDto[]>([
@@ -172,8 +323,12 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
     { id: 'ADMISSIONS', label: '6. Adaylar & Başvurular (CRM)' },
     { id: 'COMMERCIAL', label: '7. Ticari Kayıt & Sözleşme' },
     { id: 'PAYMENTS', label: '8. Ödeme Planı & Taksitler' },
-    { id: 'INTEGRATION', label: '9. BilgenOkul Integration Hub' },
-    { id: 'AUDIT', label: '10. Güvenlik & Denetim İzi' },
+    { id: 'INTEGRATION', label: '9. BilgenOkul Entegrasyon Merkezi' },
+    { id: 'FINANCE_ACCOUNTS', label: '10. Kasa & Banka Hesapları' },
+    { id: 'COLLECTIONS', label: '11. Tahsilat & Borç Mahsubu' },
+    { id: 'LEDGER', label: '12. Operasyonel Defter (Journal)' },
+    { id: 'RECONCILIATION', label: '13. Finansal Mutabakat & İade' },
+    { id: 'AUDIT', label: '14. Güvenlik & Denetim İzi' },
   ];
 
   return (
@@ -736,6 +891,128 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
                     ),
                   },
                   { key: 'lastSync', header: 'Son Senkron Zamanı', width: '160px', isNumeric: true },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'FINANCE_ACCOUNTS' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Operasyonel Para Hesapları (Financial Accounts)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Banka, Kasa ve POS takas hesapları. Bakiye mutable sütun değildir; Defter (Ledger) projeksiyonundan anlık türetilir.
+                  </p>
+                </div>
+                <StatusBadge label="IBAN MASKING: ACTIVE" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={financialAccounts}
+                columns={[
+                  { key: 'name', header: 'Hesap Adı', width: '220px' },
+                  { key: 'accountType', header: 'Hesap Türü', width: '130px', render: (row: any) => <StatusBadge label={row.accountType} variant="default" /> },
+                  { key: 'bankName', header: 'Banka / Sağlayıcı', width: '150px' },
+                  { key: 'iban', header: 'Maskelenmiş IBAN (Protected)', width: '220px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontSize: '12px' }}>{row.iban}</span> },
+                  { key: 'projectedBalance', header: 'Türetilmiş Bakiye (Ledger Projection)', width: '180px', render: (row: any) => <strong style={{ color: BILGEN_TOKENS.colors.accent, fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.projectedBalance}</strong> },
+                  { key: 'status', header: 'Durum', width: '90px', render: () => <StatusBadge label="AKTİF" variant="success" /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'COLLECTIONS' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Tahsilat & Borç Mahsubu (Collections & Payment Allocations)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Para Korunumu: Tahsilat Tutarı = Mahsup Edilen + Açıkta Kalan. Taksit statüsü doğrudan PATCH edilemez.
+                  </p>
+                </div>
+                <StatusBadge label="MONEY CONSERVATION: VERIFIED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={collections}
+                columns={[
+                  { key: 'referenceNumber', header: 'Tahsilat No', width: '130px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontWeight: 600 }}>{row.referenceNumber}</span> },
+                  { key: 'financialResponsible', header: 'Mali Sorumlu', width: '160px' },
+                  { key: 'accountName', header: 'Giriş Hesabı', width: '190px' },
+                  { key: 'amountFormatted', header: 'Tahsil Tutarı', width: '130px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.amountFormatted}</strong> },
+                  { key: 'allocatedFormatted', header: 'Mahsup Edilen', width: '120px' },
+                  { key: 'unallocatedFormatted', header: 'Açıkta Kalan', width: '120px' },
+                  { key: 'allocationState', header: 'Mahsup Durumu', width: '140px', render: (row: any) => <StatusBadge label={row.allocationState} variant={row.allocationState === 'FULLY_ALLOCATED' ? 'success' : row.allocationState === 'PARTIALLY_ALLOCATED' ? 'warning' : 'default'} /> },
+                  { key: 'status', header: 'Doğrulama', width: '110px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'CONFIRMED' ? 'success' : 'warning'} /> },
+                  { key: 'receiptNumber', header: 'Makbuz No', width: '130px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontSize: '11px' }}>{row.receiptNumber}</span> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'LEDGER' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Operasyonel Defter (Financial Ledger — Immutable Money Journal)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Kayıtlar salt-eklemelidir (append-only); güncelleme ve silme yasaktır. Düzeltmeler ters yevmiye maddesiyle işletilir.
+                  </p>
+                </div>
+                <StatusBadge label="IMMUTABLE JOURNAL: ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={ledgerEntries}
+                columns={[
+                  { key: 'entryNumber', header: 'Madde No', width: '100px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontWeight: 700 }}>#{row.entryNumber}</span> },
+                  { key: 'postedAt', header: 'Kayıt Zamanı', width: '150px' },
+                  { key: 'accountName', header: 'Hesap', width: '190px' },
+                  { key: 'entryType', header: 'Yön', width: '100px', render: (row: any) => <StatusBadge label={row.entryType} variant={row.entryType === 'MONEY_IN' ? 'success' : 'danger'} /> },
+                  { key: 'amountFormatted', header: 'Tutar', width: '130px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, color: row.entryType === 'MONEY_IN' ? BILGEN_TOKENS.colors.success : BILGEN_TOKENS.colors.danger }}>{row.amountFormatted}</strong> },
+                  { key: 'sourceType', header: 'Kaynak Türü', width: '120px' },
+                  { key: 'reference', header: 'Referans No', width: '140px' },
+                  { key: 'description', header: 'Açıklama' },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'RECONCILIATION' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Finansal Mutabakat & İade Yönetimi (Reconciliation & Refunds)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Dış hesap ekstresi ile defter mutabakatı. Belirsiz (Ambiguous) kayıtlar otomatik kapatılamaz, denetime sevk edilir.
+                  </p>
+                </div>
+                <StatusBadge label="MAKER-CHECKER: ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={reconciliationSessions}
+                columns={[
+                  { key: 'accountName', header: 'Hesap Adı', width: '220px' },
+                  { key: 'sourceType', header: 'Kaynak Türü', width: '120px', render: (row: any) => <StatusBadge label={row.sourceType} variant="default" /> },
+                  { key: 'sessionDate', header: 'Dönem Tarihi', width: '110px' },
+                  { key: 'externalClosing', header: 'Dış Ekstre Bakiye', width: '140px' },
+                  { key: 'ledgerClosing', header: 'Defter Kapanış Bakiye', width: '140px' },
+                  { key: 'discrepancy', header: 'Fark (Discrepancy)', width: '130px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, color: row.discrepancy === '0,00 ₺' ? BILGEN_TOKENS.colors.success : BILGEN_TOKENS.colors.danger, fontWeight: 700 }}>{row.discrepancy}</span> },
+                  { key: 'status', header: 'Mutabakat Durumu', width: '130px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'MATCHED' ? 'success' : 'warning'} /> },
                 ]}
               />
             </div>

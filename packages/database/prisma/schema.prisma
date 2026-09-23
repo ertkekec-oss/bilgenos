@@ -742,3 +742,208 @@ model DeadLetterEntry {
   @@index([integrationConnectionId])
   @@map("dead_letter_entries")
 }
+
+// ====================================================
+// PHASE 3: FINANCE, COLLECTIONS & FINANCIAL LEDGER
+// ====================================================
+
+model FinancialAccount {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  name          String   @db.VarChar(100)
+  accountType   String   @map("account_type") @db.VarChar(50) // CASH, BANK, CARD_CLEARING, PAYMENT_PROVIDER_CLEARING, OTHER
+  currency      String   @default("TRY") @db.VarChar(10)
+  accountNumber String?  @map("account_number") @db.VarChar(100)
+  iban          String?  @db.VarChar(50)
+  bankName      String?  @map("bank_name") @db.VarChar(100)
+  branchName    String?  @map("branch_name") @db.VarChar(100)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  collections     Collection[]
+  ledgerEntries   FinancialLedgerEntry[]
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("financial_accounts")
+}
+
+model Collection {
+  id                           String   @id @default(uuid()) @db.Uuid
+  tenantId                     String   @map("tenant_id") @db.Uuid
+  institutionId                String   @map("institution_id") @db.Uuid
+  financialResponsiblePersonId String   @map("financial_responsible_person_id") @db.Uuid
+  financialAccountId           String   @map("financial_account_id") @db.Uuid
+  paymentMethod                String   @map("payment_method") @db.VarChar(50) // CASH, BANK_TRANSFER, CREDIT_CARD, DIRECT_DEBIT, OTHER
+  amountMinor                  BigInt   @map("amount_minor")
+  currency                     String   @default("TRY") @db.VarChar(10)
+  collectedAt                  DateTime @map("collected_at") @db.Timestamptz
+  referenceNumber              String?  @map("reference_number") @db.VarChar(100)
+  status                       String   @default("PENDING") @db.VarChar(50) // PENDING, CONFIRMED, PARTIALLY_REFUNDED, REFUNDED, REVERSED, FAILED
+  notes                        String?  @db.Text
+  createdAt                    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  financialAccount FinancialAccount    @relation(fields: [financialAccountId], references: [id], onDelete: Restrict)
+  allocations      PaymentAllocation[]
+  receipts         Receipt[]
+  refunds          Refund[]
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([financialResponsiblePersonId])
+  @@index([status])
+  @@map("collections")
+}
+
+model PaymentAllocation {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String   @map("tenant_id") @db.Uuid
+  collectionId         String   @map("collection_id") @db.Uuid
+  paymentInstallmentId String   @map("payment_installment_id") @db.Uuid
+  amountMinor          BigInt   @map("amount_minor")
+  allocatedAt          DateTime @default(now()) @map("allocated_at") @db.Timestamptz
+  status               String   @default("ACTIVE") @db.VarChar(20) // ACTIVE, REVERSED
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  collection        Collection         @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  refundAllocations RefundAllocation[]
+
+  @@index([tenantId])
+  @@index([collectionId])
+  @@index([paymentInstallmentId])
+  @@map("payment_allocations")
+}
+
+model FinancialLedgerEntry {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  institutionId       String   @map("institution_id") @db.Uuid
+  entryNumber         BigInt   @map("entry_number")
+  financialAccountId  String   @map("financial_account_id") @db.Uuid
+  entryType           String   @map("entry_type") @db.VarChar(50) // MONEY_IN, MONEY_OUT, TRANSFER_IN, TRANSFER_OUT
+  amountMinor         BigInt   @map("amount_minor")
+  currency            String   @default("TRY") @db.VarChar(10)
+  sourceReferenceType String   @map("source_reference_type") @db.VarChar(50) // COLLECTION, REFUND, REVERSAL, TRANSFER, ADJUSTMENT
+  sourceReferenceId   String   @map("source_reference_id") @db.Uuid
+  description         String   @db.VarChar(255)
+  isReversed          Boolean  @default(false) @map("is_reversed")
+  reversalEntryId     String?  @map("reversal_entry_id") @db.Uuid
+  postedAt            DateTime @default(now()) @map("posted_at") @db.Timestamptz
+
+  financialAccount FinancialAccount @relation(fields: [financialAccountId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, entryNumber], map: "uq_ledger_tenant_entry_number")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([financialAccountId])
+  @@index([postedAt])
+  @@map("financial_ledger_entries")
+}
+
+model Receipt {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  institutionId     String   @map("institution_id") @db.Uuid
+  collectionId      String   @map("collection_id") @db.Uuid
+  receiptNumber     String   @map("receipt_number") @db.VarChar(100)
+  recipientPersonId String   @map("recipient_person_id") @db.Uuid
+  amountMinor       BigInt   @map("amount_minor")
+  currency          String   @default("TRY") @db.VarChar(10)
+  documentReference String?  @map("document_reference") @db.VarChar(255)
+  status            String   @default("ISSUED") @db.VarChar(20) // ISSUED, CANCELLED
+  issuedAt          DateTime @default(now()) @map("issued_at") @db.Timestamptz
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, receiptNumber], map: "uq_receipts_tenant_number")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([collectionId])
+  @@map("receipts")
+}
+
+model Refund {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  institutionId      String    @map("institution_id") @db.Uuid
+  collectionId       String    @map("collection_id") @db.Uuid
+  amountMinor        BigInt    @map("amount_minor")
+  currency           String    @default("TRY") @db.VarChar(10)
+  reason             String    @db.Text
+  status             String    @default("REQUESTED") @db.VarChar(20) // REQUESTED, APPROVED, PROCESSING, COMPLETED, FAILED, CANCELLED
+  requestedByUserId  String    @map("requested_by_user_id") @db.Uuid
+  approvedByUserId   String?   @map("approved_by_user_id") @db.Uuid
+  completedByUserId  String?   @map("completed_by_user_id") @db.Uuid
+  refundedAt         DateTime? @map("refunded_at") @db.Timestamptz
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  collection  Collection         @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  allocations RefundAllocation[]
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([collectionId])
+  @@map("refunds")
+}
+
+model RefundAllocation {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  refundId            String   @map("refund_id") @db.Uuid
+  paymentAllocationId String   @map("payment_allocation_id") @db.Uuid
+  amountMinor         BigInt   @map("amount_minor")
+  status              String   @default("ACTIVE") @db.VarChar(20) // ACTIVE, REVERSED
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  refund            Refund            @relation(fields: [refundId], references: [id], onDelete: Restrict)
+  paymentAllocation PaymentAllocation @relation(fields: [paymentAllocationId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([refundId])
+  @@index([paymentAllocationId])
+  @@map("refund_allocations")
+}
+
+model ReconciliationSession {
+  id                           String               @id @default(uuid()) @db.Uuid
+  tenantId                     String               @map("tenant_id") @db.Uuid
+  institutionId                String               @map("institution_id") @db.Uuid
+  financialAccountId           String               @map("financial_account_id") @db.Uuid
+  sourceType                   String               @map("source_type") @db.VarChar(50) // BANK, CARD, PAYMENT_PROVIDER, CASH_COUNT
+  sessionDate                  DateTime             @map("session_date") @db.Date
+  status                       String               @default("OPEN") @db.VarChar(20) // OPEN, MATCHED, DISCREPANCY, CLOSED
+  externalClosingBalanceMinor  BigInt               @map("external_closing_balance_minor")
+  ledgerClosingBalanceMinor    BigInt               @map("ledger_closing_balance_minor")
+  discrepancyMinor             BigInt               @default(0) @map("discrepancy_minor")
+  createdAt                    DateTime             @default(now()) @map("created_at") @db.Timestamptz
+
+  items ReconciliationItem[]
+
+  @@index([tenantId])
+  @@index([financialAccountId])
+  @@map("reconciliation_sessions")
+}
+
+model ReconciliationItem {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String   @map("tenant_id") @db.Uuid
+  sessionId            String   @map("session_id") @db.Uuid
+  externalReference    String   @map("external_reference") @db.VarChar(100)
+  amountMinor          BigInt   @map("amount_minor")
+  transactionDate      DateTime @map("transaction_date") @db.Date
+  matchedLedgerEntryId String?  @map("matched_ledger_entry_id") @db.Uuid
+  matchStatus          String   @default("UNMATCHED") @map("match_status") @db.VarChar(20) // UNMATCHED, MATCHED, AMBIGUOUS, MANUAL
+  confidenceScore      Int?     @map("confidence_score")
+  notes                String?  @db.Text
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session ReconciliationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([sessionId])
+  @@map("reconciliation_items")
+}

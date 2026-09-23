@@ -12,3 +12,5 @@ export * from './api/admissions.dto.js';
 export * from './api/commercial.dto.js';
 export * from './api/integration.dto.js';
 export * from './events/phase2.events.js';
+export * from './api/finance.dto.js';
+export * from './events/phase3.events.js';
