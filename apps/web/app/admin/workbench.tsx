@@ -19,6 +19,10 @@ type ActiveTab =
   | 'LEARNERS'
   | 'STRUCTURE'
   | 'ENROLLMENTS'
+  | 'ADMISSIONS'
+  | 'COMMERCIAL'
+  | 'PAYMENTS'
+  | 'INTEGRATION'
   | 'CAPABILITIES'
   | 'AUDIT';
 
@@ -164,8 +168,12 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
     { id: 'INSTITUTIONS', label: '2. Kurum & Kampüsler' },
     { id: 'PEOPLE', label: '3. Bireyler & Kimlik' },
     { id: 'LEARNERS', label: '4. Öğrenenler & Velayet' },
-    { id: 'ENROLLMENTS', label: '5. Kayıtlar & Transfer İzi' },
-    { id: 'AUDIT', label: '6. Güvenlik & Denetim İzi' },
+    { id: 'ENROLLMENTS', label: '5. Hizmet Kayıtları & Transfer' },
+    { id: 'ADMISSIONS', label: '6. Adaylar & Başvurular (CRM)' },
+    { id: 'COMMERCIAL', label: '7. Ticari Kayıt & Sözleşme' },
+    { id: 'PAYMENTS', label: '8. Ödeme Planı & Taksitler' },
+    { id: 'INTEGRATION', label: '9. BilgenOkul Integration Hub' },
+    { id: 'AUDIT', label: '10. Güvenlik & Denetim İzi' },
   ];
 
   return (
@@ -487,6 +495,247 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
                         </span>
                       ),
                   },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ADMISSIONS' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Aday Yönetimi & Başvuru Süreci (Admissions & CRM)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Aday öğrenci yaşam döngüsü, normalleştirilmiş başvuru kaynakları ve görüşme geçmişi.
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; name: string; source: string; program: string; status: string; date: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'lead-1',
+                    name: 'Emre Çetin',
+                    source: 'WEBSITE',
+                    program: 'Fen Lisesi 9. Sınıf',
+                    status: 'APPLICATION',
+                    date: '2026-09-20',
+                  },
+                  {
+                    id: 'lead-2',
+                    name: 'Selin Yılmaz',
+                    source: 'WALK_IN',
+                    program: 'YKS Eşit Ağırlık Hazırlık',
+                    status: 'OFFERED',
+                    date: '2026-09-21',
+                  },
+                  {
+                    id: 'lead-3',
+                    name: 'Kaan Demir',
+                    source: 'REFERRAL',
+                    program: 'İngilizce B2 Yoğun Kur',
+                    status: 'WON',
+                    date: '2026-09-22',
+                  },
+                ]}
+                columns={[
+                  { key: 'name', header: 'Aday Ad Soyad', width: '160px' },
+                  { key: 'source', header: 'Kanal / Kaynak', width: '120px' },
+                  { key: 'program', header: 'İlgilenilen Program', width: '220px' },
+                  {
+                    key: 'status',
+                    header: 'Aday Durumu',
+                    width: '130px',
+                    render: (row) => (
+                      <StatusBadge
+                        label={row.status}
+                        variant={row.status === 'WON' ? 'success' : row.status === 'OFFERED' ? 'warning' : 'info'}
+                      />
+                    ),
+                  },
+                  { key: 'date', header: 'Kayıt Tarihi', width: '120px', isNumeric: true },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'COMMERCIAL' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Ticari Kayıtlar & Eğitim Sözleşmeleri (Commercial Registration)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  BilgenOS ticari/hukuki kayıt omurgası. BilgenOkul akademik kaydından bağımsızdır; aktivasyonu Phase 1 Enrollment kaydı üretmez.
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; regNo: string; student: string; payer: string; contractVer: string; status: string; integration: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'creg-1',
+                    regNo: 'REG-2026-0081',
+                    student: 'Zeynep Aksoy',
+                    payer: 'Murat Aksoy (Baba)',
+                    contractVer: 'v2 (Zeyilname)',
+                    status: 'ACTIVE',
+                    integration: 'SYNCED',
+                  },
+                  {
+                    id: 'creg-2',
+                    regNo: 'REG-2026-0082',
+                    student: 'Mert Yıldız',
+                    payer: 'Fatma Yıldız (Anne)',
+                    contractVer: 'v1 (İmzalandı)',
+                    status: 'READY',
+                    integration: 'PENDING',
+                  },
+                  {
+                    id: 'creg-3',
+                    regNo: 'REG-2026-0083',
+                    student: 'Deniz Kaya',
+                    payer: 'Ahmet Kaya (Veli)',
+                    contractVer: 'v1 (Taslak)',
+                    status: 'PENDING_PAYMENT_PLAN',
+                    integration: 'NOT_REQUIRED',
+                  },
+                ]}
+                columns={[
+                  { key: 'regNo', header: 'Kayıt No', width: '140px', isNumeric: true },
+                  { key: 'student', header: 'Öğrenen Kişi', width: '160px' },
+                  { key: 'payer', header: 'Finansal Sorumlu (Payer)', width: '180px' },
+                  { key: 'contractVer', header: 'Sözleşme Versiyonu', width: '150px' },
+                  {
+                    key: 'status',
+                    header: 'Ticari Durum',
+                    width: '130px',
+                    render: (row) => (
+                      <StatusBadge
+                        label={row.status}
+                        variant={row.status === 'ACTIVE' ? 'success' : row.status === 'READY' ? 'info' : 'warning'}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'integration',
+                    header: 'BilgenOkul Durumu',
+                    width: '140px',
+                    render: (row) => (
+                      <StatusBadge
+                        label={row.integration}
+                        variant={row.integration === 'SYNCED' ? 'success' : row.integration === 'PENDING' ? 'warning' : 'default'}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'PAYMENTS' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Ödeme Planları, Taksitler & Mutabakat (Financial Foundation)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Kuruş hassasiyetinde (`BigInt`) mutabakat: brüt - burs - indirim = net sözleşme tutarı = toplam taksit. Arbitrary PATCH status=PAID kesinlikle engellenmiştir.
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; seq: string; dueDate: string; gross: string; discount: string; net: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  { id: 'p-1', seq: 'Taksit 1 / 3', dueDate: '2026-10-15', gross: '35.000,00 ₺', discount: '5.000,00 ₺', net: '30.000,00 ₺', status: 'PAID' },
+                  { id: 'p-2', seq: 'Taksit 2 / 3', dueDate: '2026-11-15', gross: '35.000,00 ₺', discount: '5.000,00 ₺', net: '30.000,00 ₺', status: 'PENDING' },
+                  { id: 'p-3', seq: 'Taksit 3 / 3', dueDate: '2026-12-15', gross: '35.000,00 ₺', discount: '5.000,00 ₺', net: '30.000,00 ₺', status: 'PENDING' },
+                ]}
+                columns={[
+                  { key: 'seq', header: 'Taksit Sırası', width: '130px' },
+                  { key: 'dueDate', header: 'Vade Tarihi', width: '120px', isNumeric: true },
+                  { key: 'gross', header: 'Brüt Tutar', width: '130px', isNumeric: true },
+                  { key: 'discount', header: 'Burs / İndirim', width: '130px', isNumeric: true },
+                  { key: 'net', header: 'Net Taksit Tutarı', width: '140px', isNumeric: true },
+                  {
+                    key: 'status',
+                    header: 'Tahsilat Durumu',
+                    width: '130px',
+                    render: (row) => (
+                      <StatusBadge
+                        label={row.status}
+                        variant={row.status === 'PAID' ? 'success' : 'default'}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'INTEGRATION' && (
+            <div>
+              <div
+                style={{
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  backgroundColor: '#FFF4E5',
+                  border: '1px solid #FFE0B2',
+                  fontSize: '12px',
+                  color: '#B76E00',
+                  fontFamily: BILGEN_TOKENS.typography.fontFamilyMono,
+                  fontWeight: 600,
+                }}
+              >
+                TRANSPORT STATUS: BILGENOKUL LIVE INTEGRATION — BLOCKED BY API DOCUMENTATION
+                <div style={{ fontWeight: 400, marginTop: '4px', color: '#555' }}>
+                  Provider adapter arayüzü ve Anti-Corruption Layer (ACL) aktiftir. Gerçek API dokümantasyonu gelene kadar test/mock provider çalışmaktadır; uydurma endpoint açılmamıştır.
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  BilgenOkul Harici Varlık Eşleştirmeleri (External Entity Mappings)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  BilgenOS Person kimliği ile BilgenOkul Academic Student kimliği arasındaki generic eşleştirme tablosu.
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; localId: string; externalId: string; provider: string; status: string; lastSync: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'map-1',
+                    localId: 'person-99120 (Zeynep)',
+                    externalId: 'BOKUL-STU-884102',
+                    provider: 'BILGEN_OKUL',
+                    status: 'SYNCED',
+                    lastSync: '2026-09-23 03:00:00',
+                  },
+                  {
+                    id: 'map-2',
+                    localId: 'person-99121 (Mert)',
+                    externalId: 'BOKUL-STU-884103',
+                    provider: 'BILGEN_OKUL',
+                    status: 'SYNCED',
+                    lastSync: '2026-09-23 03:01:15',
+                  },
+                ]}
+                columns={[
+                  { key: 'localId', header: 'BilgenOS Yerel Varlık', width: '200px' },
+                  { key: 'externalId', header: 'BilgenOkul Harici Varlık ID', width: '200px', isNumeric: true },
+                  { key: 'provider', header: 'Entegrasyon Sağlayıcı', width: '160px' },
+                  {
+                    key: 'status',
+                    header: 'Senkronizasyon',
+                    width: '130px',
+                    render: (row) => (
+                      <StatusBadge label={row.status} variant="success" />
+                    ),
+                  },
+                  { key: 'lastSync', header: 'Son Senkron Zamanı', width: '160px', isNumeric: true },
                 ]}
               />
             </div>

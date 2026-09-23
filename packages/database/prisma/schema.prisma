@@ -181,9 +181,9 @@ model Learner {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  person                Person                 @relation(fields: [personId], references: [id], onDelete: Restrict)
-  institution           Institution            @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  tenant                Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person                Person                  @relation(fields: [personId], references: [id], onDelete: Restrict)
+  institution           Institution             @relation(fields: [institutionId], references: [id], onDelete: Restrict)
   guardianRelationships GuardianRelationship[]
   enrollments           Enrollment[]
   examPrepProfile       LearnerExamPrepProfile?
@@ -271,7 +271,7 @@ model EducationProgram {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  institution Institution        @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  institution Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   levels      EducationLevel[]
   cohorts     EducationCohort[]
   enrollments Enrollment[]
@@ -297,18 +297,18 @@ model EducationLevel {
 }
 
 model EducationCohort {
-  id         String    @id @default(uuid()) @db.Uuid
-  campusId   String    @map("campus_id") @db.Uuid
-  programId  String    @map("program_id") @db.Uuid
-  levelId    String?   @map("level_id") @db.Uuid // Nullable: short seminars, workshops
-  periodId   String?   @map("period_id") @db.Uuid // Nullable: continuous rolling cohorts
-  name       String    @db.VarChar(100)
-  startDate  DateTime  @map("start_date") @db.Date
-  endDate    DateTime  @map("end_date") @db.Date
-  capacity   Int       @default(25)
-  isActive   Boolean   @default(true) @map("is_active")
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(uuid()) @db.Uuid
+  campusId  String   @map("campus_id") @db.Uuid
+  programId String   @map("program_id") @db.Uuid
+  levelId   String?  @map("level_id") @db.Uuid // Nullable: short seminars, workshops
+  periodId  String?  @map("period_id") @db.Uuid // Nullable: continuous rolling cohorts
+  name      String   @db.VarChar(100)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  capacity  Int      @default(25)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   campus      Campus           @relation(fields: [campusId], references: [id], onDelete: Cascade)
   program     EducationProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
@@ -346,14 +346,14 @@ model Enrollment {
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant      Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  institution Institution       @relation(fields: [institutionId], references: [id], onDelete: Restrict)
-  campus      Campus?           @relation(fields: [campusId], references: [id], onDelete: SetNull)
-  period      EducationPeriod?  @relation(fields: [periodId], references: [id], onDelete: SetNull)
-  program     EducationProgram  @relation(fields: [programId], references: [id], onDelete: Restrict)
-  level       EducationLevel?   @relation(fields: [levelId], references: [id], onDelete: SetNull)
-  cohort      EducationCohort?  @relation(fields: [cohortId], references: [id], onDelete: SetNull)
-  learner     Learner           @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  institution Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  campus      Campus?          @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  period      EducationPeriod? @relation(fields: [periodId], references: [id], onDelete: SetNull)
+  program     EducationProgram @relation(fields: [programId], references: [id], onDelete: Restrict)
+  level       EducationLevel?  @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  cohort      EducationCohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+  learner     Learner          @relation(fields: [learnerId], references: [id], onDelete: Restrict)
 
   @@index([tenantId])
   @@index([institutionId])
@@ -385,17 +385,17 @@ model TransactionalOutbox {
 }
 
 model AuditLog {
-  id           String   @id @default(uuid()) @db.Uuid
-  tenantId     String   @map("tenant_id") @db.Uuid
-  actorUserId  String?  @map("actor_user_id") @db.Uuid
-  action       String   @db.VarChar(100)
-  entityType   String   @map("entity_type") @db.VarChar(100)
-  entityId     String   @map("entity_id") @db.Uuid
-  beforeState  Json?    @map("before_state")
-  afterState   Json?    @map("after_state")
-  ipAddress    String?  @map("ip_address") @db.VarChar(50)
-  userAgent    String?  @map("user_agent") @db.Text
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  action      String   @db.VarChar(100)
+  entityType  String   @map("entity_type") @db.VarChar(100)
+  entityId    String   @map("entity_id") @db.Uuid
+  beforeState Json?    @map("before_state")
+  afterState  Json?    @map("after_state")
+  ipAddress   String?  @map("ip_address") @db.VarChar(50)
+  userAgent   String?  @map("user_agent") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -415,4 +415,330 @@ model IdempotencyKey {
 
   @@index([tenantId])
   @@map("idempotency_keys")
+}
+
+// ====================================================
+// PHASE 2: ADMISSIONS & CRM BOUNDED CONTEXT
+// ====================================================
+
+model Lead {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  institutionId       String   @map("institution_id") @db.Uuid
+  candidatePersonId   String?  @map("candidate_person_id") @db.Uuid
+  guardianPersonId    String?  @map("guardian_person_id") @db.Uuid
+  source              String   @db.VarChar(50) // WEBSITE, PHONE, WALK_IN, etc.
+  status              String   @default("NEW") @db.VarChar(50) // NEW, CONTACTED, QUALIFIED, APPLICATION, OFFERED, WON, LOST, ARCHIVED
+  assignedToUserId    String?  @map("assigned_to_user_id") @db.Uuid
+  interestedProgramId String?  @map("interested_program_id") @db.Uuid
+  interestedCampusId  String?  @map("interested_campus_id") @db.Uuid
+  notesSummary        String?  @map("notes_summary") @db.Text
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([status])
+  @@map("leads")
+}
+
+model AdmissionApplication {
+  id                         String    @id @default(uuid()) @db.Uuid
+  tenantId                   String    @map("tenant_id") @db.Uuid
+  institutionId              String    @map("institution_id") @db.Uuid
+  leadId                     String    @map("lead_id") @db.Uuid
+  candidatePersonId          String    @map("candidate_person_id") @db.Uuid
+  targetCampusId             String?   @map("target_campus_id") @db.Uuid
+  requestedEducationPeriodId String?   @map("requested_education_period_id") @db.Uuid
+  requestedProgramId         String?   @map("requested_program_id") @db.Uuid
+  requestedLevelId           String?   @map("requested_level_id") @db.Uuid
+  status                     String    @default("DRAFT") @db.VarChar(50) // DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CANCELLED, CONVERTED
+  submittedAt                DateTime? @map("submitted_at") @db.Timestamptz
+  approvedAt                 DateTime? @map("approved_at") @db.Timestamptz
+  rejectedAt                 DateTime? @map("rejected_at") @db.Timestamptz
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([leadId])
+  @@map("admission_applications")
+}
+
+model AdmissionActivity {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  leadId            String   @map("lead_id") @db.Uuid
+  performedByUserId String   @map("performed_by_user_id") @db.Uuid
+  type              String   @db.VarChar(50) // CALL, MEETING, EMAIL, MESSAGE, VISIT, NOTE, FOLLOW_UP
+  summary           String   @db.Text
+  performedAt       DateTime @default(now()) @map("performed_at") @db.Timestamptz
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([leadId])
+  @@map("admission_activities")
+}
+
+model AdmissionOffer {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @map("tenant_id") @db.Uuid
+  institutionId          String    @map("institution_id") @db.Uuid
+  applicationId          String    @map("application_id") @db.Uuid
+  currency               String    @default("TRY") @db.VarChar(10)
+  listAmountMinor        BigInt    @map("list_amount_minor")
+  scholarshipAmountMinor BigInt    @default(0) @map("scholarship_amount_minor")
+  discountAmountMinor    BigInt    @default(0) @map("discount_amount_minor")
+  netAmountMinor         BigInt    @map("net_amount_minor")
+  validUntil             DateTime? @map("valid_until") @db.Timestamptz
+  status                 String    @default("DRAFT") @db.VarChar(50) // DRAFT, PRESENTED, ACCEPTED, REJECTED, EXPIRED
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([applicationId])
+  @@map("admission_offers")
+}
+
+// ====================================================
+// PHASE 2: COMMERCIAL REGISTRATION & FINANCES
+// ====================================================
+
+model ScholarshipAward {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  institutionId     String    @map("institution_id") @db.Uuid
+  candidatePersonId String    @map("candidate_person_id") @db.Uuid
+  type              String    @db.VarChar(50) // ACADEMIC, ATHLETIC, NEED, BOARD, INSTITUTIONAL
+  amountType        String    @map("amount_type") @db.VarChar(20) // PERCENTAGE, FIXED_MINOR
+  value             BigInt
+  reasonCode        String?   @map("reason_code") @db.VarChar(100)
+  approvedByUserId  String?   @map("approved_by_user_id") @db.Uuid
+  approvedAt        DateTime? @map("approved_at") @db.Timestamptz
+  validFrom         DateTime? @map("valid_from") @db.Date
+  validUntil        DateTime? @map("valid_until") @db.Date
+  status            String    @default("ACTIVE") @db.VarChar(20) // ACTIVE, REVOKED, EXPIRED
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([candidatePersonId])
+  @@map("scholarship_awards")
+}
+
+model DiscountApplication {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  reason        String   @db.VarChar(50) // SIBLING, STAFF, EARLY_REGISTRATION, CAMPAIGN, MANUAL, OTHER
+  amountMinor   BigInt   @map("amount_minor")
+  description   String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("discount_applications")
+}
+
+model CommercialRegistration {
+  id                           String   @id @default(uuid()) @db.Uuid
+  tenantId                     String   @map("tenant_id") @db.Uuid
+  institutionId                String   @map("institution_id") @db.Uuid
+  candidatePersonId            String   @map("candidate_person_id") @db.Uuid
+  guardianPersonId             String?  @map("guardian_person_id") @db.Uuid
+  financialResponsiblePersonId String   @map("financial_responsible_person_id") @db.Uuid
+  applicationId                String?  @map("application_id") @db.Uuid
+  offerId                      String?  @map("offer_id") @db.Uuid
+  educationPeriodId            String?  @map("education_period_id") @db.Uuid
+  programId                    String?  @map("program_id") @db.Uuid
+  campusId                     String?  @map("campus_id") @db.Uuid
+  status                       String   @default("DRAFT") @db.VarChar(50) // DRAFT, PENDING_CONTRACT, PENDING_PAYMENT_PLAN, READY, ACTIVE, CANCELLED, WITHDRAWN, COMPLETED
+  integrationStatus            String   @default("NOT_REQUIRED") @map("integration_status") @db.VarChar(50) // NOT_REQUIRED, PENDING, SYNCING, SYNCED, FAILED, CONFLICT
+  contractId                   String?  @map("contract_id") @db.Uuid
+  paymentPlanId                String?  @map("payment_plan_id") @db.Uuid
+  createdAt                    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([candidatePersonId])
+  @@index([status])
+  @@index([integrationStatus])
+  @@map("commercial_registrations")
+}
+
+model EducationContract {
+  id                           String    @id @default(uuid()) @db.Uuid
+  tenantId                     String    @map("tenant_id") @db.Uuid
+  institutionId                String    @map("institution_id") @db.Uuid
+  registrationId               String    @map("registration_id") @db.Uuid
+  contractNumber               String    @map("contract_number") @db.VarChar(100)
+  version                      Int       @default(1)
+  financialResponsiblePersonId String    @map("financial_responsible_person_id") @db.Uuid
+  effectiveDate                DateTime  @map("effective_date") @db.Date
+  expiryDate                   DateTime? @map("expiry_date") @db.Date
+  status                       String    @default("DRAFT") @db.VarChar(50) // DRAFT, ISSUED, ACCEPTED, SIGNED, CANCELLED, EXPIRED
+  documentReference            String?   @map("document_reference") @db.VarChar(255)
+  createdAt                    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([tenantId, contractNumber, version])
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([registrationId])
+  @@map("education_contracts")
+}
+
+model PaymentPlan {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  institutionId    String   @map("institution_id") @db.Uuid
+  registrationId   String   @map("registration_id") @db.Uuid
+  totalAmountMinor BigInt   @map("total_amount_minor")
+  currency         String   @default("TRY") @db.VarChar(10)
+  status           String   @default("DRAFT") @db.VarChar(50) // DRAFT, ACTIVE, FULFILLED, DEFAULTED
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([registrationId])
+  @@map("payment_plans")
+}
+
+model PaymentInstallment {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  paymentPlanId String   @map("payment_plan_id") @db.Uuid
+  sequence      Int
+  dueDate       DateTime @map("due_date") @db.Date
+  amountMinor   BigInt   @map("amount_minor")
+  currency      String   @default("TRY") @db.VarChar(10)
+  status        String   @default("PENDING") @db.VarChar(50) // PENDING, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([paymentPlanId, sequence])
+  @@index([tenantId])
+  @@index([paymentPlanId])
+  @@index([status])
+  @@map("payment_installments")
+}
+
+// ====================================================
+// PHASE 2: BILGEN INTEGRATION HUB
+// ====================================================
+
+model IntegrationProvider {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique @db.VarChar(50) // e.g. BILGEN_OKUL
+  name      String   @db.VarChar(100)
+  status    String   @default("ACTIVE") @db.VarChar(20) // ACTIVE, INACTIVE
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("integration_providers")
+}
+
+model IntegrationConnection {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @map("tenant_id") @db.Uuid
+  institutionId          String?   @map("institution_id") @db.Uuid
+  providerCode           String    @map("provider_code") @db.VarChar(50)
+  status                 String    @default("ACTIVE") @db.VarChar(50) // DRAFT, ACTIVE, DEGRADED, SUSPENDED, DISABLED
+  configurationEncrypted String?   @map("configuration_encrypted") @db.Text
+  credentialReference    String?   @map("credential_reference") @db.VarChar(255)
+  lastSuccessfulSyncAt   DateTime? @map("last_successful_sync_at") @db.Timestamptz
+  lastFailedSyncAt       DateTime? @map("last_failed_sync_at") @db.Timestamptz
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("integration_connections")
+}
+
+model ExternalEntityMapping {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @map("tenant_id") @db.Uuid
+  integrationConnectionId String    @map("integration_connection_id") @db.Uuid
+  localEntityType         String    @map("local_entity_type") @db.VarChar(50) // PERSON, LEARNER, INSTITUTION, GUARDIAN
+  localEntityId           String    @map("local_entity_id") @db.Uuid
+  externalEntityType      String    @map("external_entity_type") @db.VarChar(50) // BILGEN_OKUL_STUDENT, etc.
+  externalEntityId        String    @map("external_entity_id") @db.VarChar(255)
+  externalVersion         String?   @map("external_version") @db.VarChar(50)
+  syncStatus              String    @default("SYNCED") @map("sync_status") @db.VarChar(20) // SYNCED, PENDING, CONFLICT, FAILED
+  lastSyncedAt            DateTime? @map("last_synced_at") @db.Timestamptz
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([tenantId, integrationConnectionId, localEntityType, localEntityId], map: "uq_ext_mapping_local")
+  @@unique([tenantId, integrationConnectionId, externalEntityType, externalEntityId], map: "uq_ext_mapping_external")
+  @@index([tenantId])
+  @@index([integrationConnectionId])
+  @@map("external_entity_mappings")
+}
+
+model SyncLog {
+  id                      String   @id @default(uuid()) @db.Uuid
+  tenantId                String   @map("tenant_id") @db.Uuid
+  integrationConnectionId String   @map("integration_connection_id") @db.Uuid
+  action                  String   @db.VarChar(100)
+  entityType              String   @map("entity_type") @db.VarChar(50)
+  status                  String   @db.VarChar(20) // SUCCESS, FAILURE
+  details                 Json?
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([integrationConnectionId])
+  @@map("sync_logs")
+}
+
+model WebhookInbox {
+  id              String    @id @default(uuid()) @db.Uuid
+  providerCode    String    @map("provider_code") @db.VarChar(50)
+  providerEventId String?   @map("provider_event_id") @db.VarChar(255)
+  eventType       String    @map("event_type") @db.VarChar(100)
+  payload         Json
+  status          String    @default("PENDING") @db.VarChar(20) // PENDING, PROCESSED, FAILED, IGNORED
+  processedAt     DateTime? @map("processed_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([providerCode, providerEventId])
+  @@index([providerCode, status])
+  @@map("webhook_inbox")
+}
+
+model IntegrationConflict {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @map("tenant_id") @db.Uuid
+  integrationConnectionId String    @map("integration_connection_id") @db.Uuid
+  entityType              String    @map("entity_type") @db.VarChar(50)
+  localCandidateId        String?   @map("local_candidate_id") @db.Uuid
+  externalCandidateId     String?   @map("external_candidate_id") @db.VarChar(255)
+  reason                  String    @db.Text
+  resolutionDetails       String?   @map("resolution_details") @db.Text
+  status                  String    @default("OPEN") @db.VarChar(20) // OPEN, RESOLVED, IGNORED
+  resolvedAt              DateTime? @map("resolved_at") @db.Timestamptz
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([integrationConnectionId])
+  @@index([status])
+  @@map("integration_conflicts")
+}
+
+model DeadLetterEntry {
+  id                      String   @id @default(uuid()) @db.Uuid
+  tenantId                String   @map("tenant_id") @db.Uuid
+  integrationConnectionId String   @map("integration_connection_id") @db.Uuid
+  jobId                   String   @map("job_id") @db.Uuid
+  payloadType             String   @map("payload_type") @db.VarChar(100)
+  errorMessage            String   @map("error_message") @db.Text
+  attempts                Int      @default(3)
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([integrationConnectionId])
+  @@map("dead_letter_entries")
 }

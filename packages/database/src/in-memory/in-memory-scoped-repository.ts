@@ -15,11 +15,25 @@ export const globalDbStorage = {
   learners: new Map<UUID, LearnerDto>(),
   guardians: new Map<UUID, GuardianRelationshipDto>(),
   enrollments: new Map<UUID, EnrollmentDto>(),
+  leads: new Map<UUID, any>(),
+  applications: new Map<UUID, any>(),
+  commercialRegistrations: new Map<UUID, any>(),
+  contracts: new Map<UUID, any>(),
+  paymentPlans: new Map<UUID, any>(),
+  externalEntityMappings: new Map<UUID, any>(),
+  conflicts: new Map<UUID, any>(),
   clear(): void {
     this.persons.clear();
     this.learners.clear();
     this.guardians.clear();
     this.enrollments.clear();
+    this.leads.clear();
+    this.applications.clear();
+    this.commercialRegistrations.clear();
+    this.contracts.clear();
+    this.paymentPlans.clear();
+    this.externalEntityMappings.clear();
+    this.conflicts.clear();
   },
 };
 
@@ -113,5 +127,69 @@ export class InMemoryScopedEnrollmentRepository extends ScopedRepositoryBase<Enr
     };
     globalDbStorage.enrollments.set(enrollment.id, enrollment);
     return enrollment;
+  }
+}
+
+export class InMemoryScopedLeadRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.leads.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-Tenant Leak Prevented: Tenant '${this.tenantId}' tried to access Lead '${id}'`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId };
+    globalDbStorage.leads.set(item.id, item);
+    return item;
+  }
+  public async list(): Promise<any[]> {
+    return Array.from(globalDbStorage.leads.values()).filter(l => l.tenantId === this.tenantId);
+  }
+}
+
+export class InMemoryScopedCommercialRegistrationRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.commercialRegistrations.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-Tenant Leak Prevented: Tenant '${this.tenantId}' tried to access CommercialRegistration '${id}'`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId };
+    globalDbStorage.commercialRegistrations.set(item.id, item);
+    return item;
+  }
+  public async list(): Promise<any[]> {
+    return Array.from(globalDbStorage.commercialRegistrations.values()).filter(r => r.tenantId === this.tenantId);
+  }
+}
+
+export class InMemoryScopedExternalMappingRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findByLocal(connectionId: UUID, entityType: string, entityId: UUID): Promise<any | null> {
+    const match = Array.from(globalDbStorage.externalEntityMappings.values()).find(
+      m => m.tenantId === this.tenantId && m.integrationConnectionId === connectionId && m.localEntityType === entityType && m.localEntityId === entityId
+    );
+    return match || null;
+  }
+  public async create(data: any): Promise<any> {
+    // Check scoped uniqueness
+    const existing = Array.from(globalDbStorage.externalEntityMappings.values()).find(
+      m => m.tenantId === this.tenantId && m.integrationConnectionId === data.integrationConnectionId &&
+           ((m.localEntityType === data.localEntityType && m.localEntityId === data.localEntityId) ||
+            (m.externalEntityType === data.externalEntityType && m.externalEntityId === data.externalEntityId))
+    );
+    if (existing) {
+      throw new Error(`Unique mapping violation in connection '${data.integrationConnectionId}'`);
+    }
+    const item = { ...data, tenantId: this.tenantId };
+    globalDbStorage.externalEntityMappings.set(item.id, item);
+    return item;
   }
 }

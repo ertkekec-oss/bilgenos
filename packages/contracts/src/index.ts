@@ -8,3 +8,7 @@ export * from './api/learner.dto.js';
 export * from './api/guardian-relationship.dto.js';
 export * from './api/education-structure.dto.js';
 export * from './api/enrollment.dto.js';
+export * from './api/admissions.dto.js';
+export * from './api/commercial.dto.js';
+export * from './api/integration.dto.js';
+export * from './events/phase2.events.js';
