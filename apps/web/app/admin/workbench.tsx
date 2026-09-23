@@ -28,12 +28,190 @@ type ActiveTab =
   | 'LEDGER'
   | 'RECONCILIATION'
   | 'CAPABILITIES'
-  | 'AUDIT';
+  | 'AUDIT'
+  | 'PERSONNEL'
+  | 'ASSIGNMENTS'
+  | 'LEAVES'
+  | 'ATTENDANCE';
 
 export function CoreAdministrationWorkbench(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<ActiveTab>('CAPABILITIES');
 
-  // Phase 3 Finance Seed Data (Excel-grade Light Corporate)
+  // Phase 4 HR & Workforce Seed Data (Excel-grade Corporate)
+  const [employees] = useState([
+    {
+      id: 'emp-101',
+      employeeNumber: 'EMP-2026-0042',
+      nationalId: '10293847561',
+      fullName: 'Ahmet Faruk Yılmaz',
+      department: 'Fen Bilimleri Bölümü',
+      position: 'Fizik Bölüm Başkanı',
+      employmentType: 'FULL_TIME',
+      status: 'ACTIVE',
+      joinedAt: '2022-09-01',
+      totalAllocation: '100%',
+      documentStatus: 'VERIFIED (3/3)',
+      bilgenOkulMapped: true,
+      bilgenOkulTeacherId: 'TC-BO-8831',
+    },
+    {
+      id: 'emp-102',
+      employeeNumber: 'EMP-2026-0089',
+      nationalId: '98765432109',
+      fullName: 'Zeynep Kaya Çelik',
+      department: 'Matematik Bölümü',
+      position: 'Matematik Öğretmeni',
+      employmentType: 'FULL_TIME',
+      status: 'ACTIVE',
+      joinedAt: '2024-02-15',
+      totalAllocation: '100%',
+      documentStatus: 'VERIFIED (2/2)',
+      bilgenOkulMapped: true,
+      bilgenOkulTeacherId: 'TC-BO-9042',
+    },
+    {
+      id: 'emp-103',
+      employeeNumber: 'EMP-2026-0115',
+      nationalId: '45678912301',
+      fullName: 'Dr. Selim Candan',
+      department: 'Ölçme ve Değerlendirme',
+      position: 'YKS Akademik Danışmanı',
+      employmentType: 'PART_TIME',
+      status: 'ACTIVE',
+      joinedAt: '2025-08-01',
+      totalAllocation: '70%',
+      documentStatus: 'PENDING_AUDIT (1/2)',
+      bilgenOkulMapped: false,
+      bilgenOkulTeacherId: '-',
+    },
+  ]);
+
+  const [assignments] = useState([
+    {
+      id: 'asg-01',
+      employeeName: 'Ahmet Faruk Yılmaz',
+      institution: 'Bilgen Fen ve Anadolu Lisesi',
+      campus: 'Merkez Kampüs',
+      department: 'Fen Bilimleri',
+      position: 'Fizik Bölüm Başkanı',
+      workPercentage: '80%',
+      isPrimary: true,
+      startDate: '2022-09-01',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'asg-02',
+      employeeName: 'Ahmet Faruk Yılmaz',
+      institution: 'Bilgen YKS Hazırlık Merkezi',
+      campus: 'Kızılay Kampüsü',
+      department: 'Fen Bilimleri',
+      position: 'YKS Fizik Baş Danışmanı',
+      workPercentage: '20%',
+      isPrimary: false,
+      startDate: '2023-09-01',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'asg-03',
+      employeeName: 'Dr. Selim Candan',
+      institution: 'Bilgen Fen ve Anadolu Lisesi',
+      campus: 'Merkez Kampüs',
+      department: 'Ölçme & Değerlendirme',
+      position: 'YKS Danışmanı',
+      workPercentage: '40%',
+      isPrimary: true,
+      startDate: '2025-08-01',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'asg-04',
+      employeeName: 'Dr. Selim Candan',
+      institution: 'Bilgen Yabancı Dil Akademisi',
+      campus: 'Çankaya Kampüsü',
+      department: 'Yabancı Dil',
+      position: 'Akademik Danışman',
+      workPercentage: '30%',
+      isPrimary: false,
+      startDate: '2025-09-01',
+      status: 'ACTIVE',
+    },
+  ]);
+
+  const [leaves] = useState([
+    {
+      id: 'lv-01',
+      employeeName: 'Zeynep Kaya Çelik',
+      leaveType: 'ANNUAL (Yıllık İzin)',
+      startDate: '2026-07-06',
+      endDate: '2026-07-17',
+      totalDays: 10,
+      maker: 'Zeynep Kaya Çelik (Başvuran)',
+      checker: 'Ahmet Faruk Yılmaz (Bölüm Bşk.)',
+      status: 'APPROVED',
+      remainingBalance: '14 Gün',
+      appliedAt: '2026-06-15 11:20',
+    },
+    {
+      id: 'lv-02',
+      employeeName: 'Ahmet Faruk Yılmaz',
+      leaveType: 'CASUAL (Mazeret İzni)',
+      startDate: '2026-09-25',
+      endDate: '2026-09-25',
+      totalDays: 1,
+      maker: 'Ahmet Faruk Yılmaz (Başvuran)',
+      checker: 'Genel Müdürlük (İK Direktörü)',
+      status: 'SUBMITTED',
+      remainingBalance: '4 Gün',
+      appliedAt: '2026-09-22 16:40',
+    },
+  ]);
+
+  const [attendanceSessions] = useState([
+    {
+      id: 'att-101',
+      employeeName: 'Ahmet Faruk Yılmaz',
+      date: '2026-09-22',
+      firstIn: '07:54:12',
+      lastOut: '17:32:05',
+      grossMinutes: 578,
+      breakMinutes: 45,
+      netWorkedMinutes: 533,
+      netWorkedFormatted: '8 sa 53 dk',
+      status: 'PRESENT',
+      discrepancy: 'YOK (Zamanında)',
+      verificationDevice: 'MERKEZ-TURNIKE-01 (RFID/Biyometrik)',
+    },
+    {
+      id: 'att-102',
+      employeeName: 'Zeynep Kaya Çelik',
+      date: '2026-09-22',
+      firstIn: '08:18:40',
+      lastOut: '17:05:18',
+      grossMinutes: 527,
+      breakMinutes: 45,
+      netWorkedMinutes: 482,
+      netWorkedFormatted: '8 sa 02 dk',
+      status: 'PRESENT',
+      discrepancy: '18 dk Geç Giriş',
+      verificationDevice: 'MERKEZ-TURNIKE-02 (Biyometrik)',
+    },
+    {
+      id: 'att-103',
+      employeeName: 'Dr. Selim Candan',
+      date: '2026-09-22',
+      firstIn: '09:02:10',
+      lastOut: '14:30:22',
+      grossMinutes: 328,
+      breakMinutes: 30,
+      netWorkedMinutes: 298,
+      netWorkedFormatted: '4 sa 58 dk',
+      status: 'PARTIAL',
+      discrepancy: 'Yarı Zamanlı Program Uyumlu',
+      verificationDevice: 'KIZILAY-GIRIS-01 (RFID)',
+    },
+  ]);
+
+    // Phase 3 Finance Seed Data (Excel-grade Light Corporate)
   const [financialAccounts] = useState([
     {
       id: 'acc-1',
@@ -329,6 +507,10 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
     { id: 'LEDGER', label: '12. Operasyonel Defter (Journal)' },
     { id: 'RECONCILIATION', label: '13. Finansal Mutabakat & İade' },
     { id: 'AUDIT', label: '14. Güvenlik & Denetim İzi' },
+    { id: 'PERSONNEL', label: '15. Personel Listesi & Özlük' },
+    { id: 'ASSIGNMENTS', label: '16. İstihdam & Görevlendirme' },
+    { id: 'LEAVES', label: '17. İzin & Mazeret Yönetimi' },
+    { id: 'ATTENDANCE', label: '18. Personel Devam & Puantaj' },
   ];
 
   return (
@@ -1013,6 +1195,139 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
                   { key: 'ledgerClosing', header: 'Defter Kapanış Bakiye', width: '140px' },
                   { key: 'discrepancy', header: 'Fark (Discrepancy)', width: '130px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, color: row.discrepancy === '0,00 ₺' ? BILGEN_TOKENS.colors.success : BILGEN_TOKENS.colors.danger, fontWeight: 700 }}>{row.discrepancy}</span> },
                   { key: 'status', header: 'Mutabakat Durumu', width: '130px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'MATCHED' ? 'success' : 'warning'} /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'PERSONNEL' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Personel Listesi & Özlük Dosyası (Workforce Master)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    HR Master Otoritesi BilgenOS'tur. Kimlik ve çalışan profili ayrı katmandır (Person ≠ EmployeeProfile). Özlük belgeleri gizlilik sınıflandırmasına tabidir.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <StatusBadge label="HR MASTER: BILGEN_OS" variant="success" />
+                  <StatusBadge label="BILGENOKUL MAPPING: ACTIVE" variant="default" />
+                </div>
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={employees}
+                columns={[
+                  { key: 'employeeNumber', header: 'Sicil No', width: '130px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.employeeNumber}</strong> },
+                  { key: 'fullName', header: 'Ad Soyad', width: '180px' },
+                  { key: 'nationalId', header: 'T.C. Kimlik No', width: '120px' },
+                  { key: 'department', header: 'Departman', width: '170px' },
+                  { key: 'position', header: 'Pozisyon / Unvan', width: '170px' },
+                  { key: 'employmentType', header: 'Çalışma Tipi', width: '110px', render: (row: any) => <StatusBadge label={row.employmentType} variant="default" /> },
+                  { key: 'totalAllocation', header: 'Toplam Efor %', width: '100px', render: (row: any) => <strong style={{ color: BILGEN_TOKENS.colors.accent }}>{row.totalAllocation}</strong> },
+                  { key: 'status', header: 'Durum', width: '90px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'ACTIVE' ? 'success' : 'warning'} /> },
+                  { key: 'documentStatus', header: 'Özlük Evrakları', width: '140px' },
+                  { key: 'bilgenOkulTeacherId', header: 'BilgenOkul Eşleme', width: '140px', render: (row: any) => row.bilgenOkulMapped ? <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontSize: '11px', color: BILGEN_TOKENS.colors.success }}>✓ {row.bilgenOkulTeacherId}</span> : <span style={{ color: BILGEN_TOKENS.colors.textMuted, fontSize: '11px' }}>Eşlenmedi</span> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ASSIGNMENTS' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    İstihdam & Çoklu Kurum Görevlendirmeleri (Multi-Institution Allocation)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    İstihdam tüzel sözleşmedir; Görevlendirme ise operasyonel kurum/kampüs dağılımıdır. Bir personelin toplam çalışma oranı %100'ü aşamaz (HR-003).
+                  </p>
+                </div>
+                <StatusBadge label="ALLOCATION CAP: ≤100% ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={assignments}
+                columns={[
+                  { key: 'employeeName', header: 'Personel Adı', width: '180px' },
+                  { key: 'institution', header: 'Görevli Olduğu Kurum', width: '220px' },
+                  { key: 'campus', header: 'Kampüs', width: '140px' },
+                  { key: 'department', header: 'Bölüm', width: '160px' },
+                  { key: 'position', header: 'Pozisyon', width: '170px' },
+                  { key: 'workPercentage', header: 'Efor Oranı', width: '100px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, color: BILGEN_TOKENS.colors.accent }}>{row.workPercentage}</strong> },
+                  { key: 'isPrimary', header: 'Asli Görev?', width: '100px', render: (row: any) => row.isPrimary ? <StatusBadge label="ASLİ" variant="success" /> : <StatusBadge label="EK GÖREV" variant="default" /> },
+                  { key: 'startDate', header: 'Başlangıç', width: '110px' },
+                  { key: 'status', header: 'Durum', width: '90px', render: (row: any) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'LEAVES' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    İzin & Mazeret Yönetimi (Maker-Checker & Leave Ledger)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    İzinler muhakkak onay akışına (Maker-Checker) tabidir; başvuran kendi iznini onaylayamaz (HR-007). Kalan bakiye bakiye defterinden (LeaveTransaction) hesaplanır.
+                  </p>
+                </div>
+                <StatusBadge label="MAKER-CHECKER: ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={leaves}
+                columns={[
+                  { key: 'employeeName', header: 'Personel', width: '170px' },
+                  { key: 'leaveType', header: 'İzin Türü', width: '160px' },
+                  { key: 'startDate', header: 'Başlangıç', width: '110px' },
+                  { key: 'endDate', header: 'Bitiş', width: '110px' },
+                  { key: 'totalDays', header: 'Süre (Gün)', width: '90px', isNumeric: true },
+                  { key: 'maker', header: 'Talep Eden (Maker)', width: '180px' },
+                  { key: 'checker', header: 'Onaylayan (Checker)', width: '180px' },
+                  { key: 'remainingBalance', header: 'Kalan Bakiye', width: '110px', render: (row: any) => <strong style={{ color: BILGEN_TOKENS.colors.accent }}>{row.remainingBalance}</strong> },
+                  { key: 'status', header: 'Durum', width: '110px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'APPROVED' ? 'success' : 'warning'} /> },
+                  { key: 'appliedAt', header: 'Talep Zamanı', width: '140px' },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ATTENDANCE' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Personel Devam & Puantaj Doğrulama (Attendance Sessions)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Ham giriş-çıkış olayları (AttendanceEvent) değiştirilemez kanıtlardır. Günlük seans ve net çalışma dakikaları türetilmiş projeksiyondur (HR-005).
+                  </p>
+                </div>
+                <StatusBadge label="EMPIRICAL PUNCH AUDIT: ON" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={attendanceSessions}
+                columns={[
+                  { key: 'employeeName', header: 'Personel', width: '170px' },
+                  { key: 'date', header: 'Tarih', width: '100px' },
+                  { key: 'firstIn', header: 'İlk Giriş', width: '90px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.firstIn}</span> },
+                  { key: 'lastOut', header: 'Son Çıkış', width: '90px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.lastOut}</span> },
+                  { key: 'breakMinutes', header: 'Mola', width: '70px', render: (row: any) => <span>{row.breakMinutes} dk</span> },
+                  { key: 'netWorkedFormatted', header: 'Net Çalışma', width: '110px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, color: BILGEN_TOKENS.colors.success }}>{row.netWorkedFormatted}</strong> },
+                  { key: 'discrepancy', header: 'Vardiya Sapması', width: '160px', render: (row: any) => <span style={{ color: row.discrepancy.includes('Geç') ? BILGEN_TOKENS.colors.danger : BILGEN_TOKENS.colors.textSecondary }}>{row.discrepancy}</span> },
+                  { key: 'verificationDevice', header: 'Doğrulama Terminali', width: '220px' },
+                  { key: 'status', header: 'Durum', width: '100px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'PRESENT' ? 'success' : 'default'} /> },
                 ]}
               />
             </div>

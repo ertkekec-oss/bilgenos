@@ -14,3 +14,5 @@ export * from './api/integration.dto.js';
 export * from './events/phase2.events.js';
 export * from './api/finance.dto.js';
 export * from './events/phase3.events.js';
+export * from './api/hr.dto.js';
+export * from './events/phase4.events.js';

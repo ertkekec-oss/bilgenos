@@ -25,6 +25,7 @@ model Tenant {
   users                 User[]
   learners              Learner[]
   guardianRelationships GuardianRelationship[]
+  employeeProfiles      EmployeeProfile[]
   enrollments           Enrollment[]
   auditLogs             AuditLog[]
 
@@ -42,6 +43,7 @@ model Organization {
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   institutions Institution[]
+  employments  Employment[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -64,6 +66,12 @@ model Institution {
   programs         EducationProgram[]
   learners         Learner[]
   enrollments      Enrollment[]
+  departments      Department[]
+  positions        Position[]
+  assignments      InstitutionAssignment[]
+  workSchedules    WorkSchedule[]
+  attendanceEvents AttendanceEvent[]
+  employeeLeaves   EmployeeLeave[]
 
   @@index([organizationId])
   @@map("institutions")
@@ -95,9 +103,10 @@ model Campus {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  institution Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  institution Institution             @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   cohorts     EducationCohort[]
   enrollments Enrollment[]
+  assignments InstitutionAssignment[]
 
   @@index([institutionId])
   @@map("campuses")
@@ -124,6 +133,7 @@ model Person {
   users                 User[]
   learners              Learner[]
   guardianRelationships GuardianRelationship[]
+  employeeProfiles      EmployeeProfile[]
 
   @@index([tenantId])
   @@map("persons")
@@ -762,8 +772,8 @@ model FinancialAccount {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  collections     Collection[]
-  ledgerEntries   FinancialLedgerEntry[]
+  collections   Collection[]
+  ledgerEntries FinancialLedgerEntry[]
 
   @@index([tenantId])
   @@index([institutionId])
@@ -867,19 +877,19 @@ model Receipt {
 }
 
 model Refund {
-  id                 String    @id @default(uuid()) @db.Uuid
-  tenantId           String    @map("tenant_id") @db.Uuid
-  institutionId      String    @map("institution_id") @db.Uuid
-  collectionId       String    @map("collection_id") @db.Uuid
-  amountMinor        BigInt    @map("amount_minor")
-  currency           String    @default("TRY") @db.VarChar(10)
-  reason             String    @db.Text
-  status             String    @default("REQUESTED") @db.VarChar(20) // REQUESTED, APPROVED, PROCESSING, COMPLETED, FAILED, CANCELLED
-  requestedByUserId  String    @map("requested_by_user_id") @db.Uuid
-  approvedByUserId   String?   @map("approved_by_user_id") @db.Uuid
-  completedByUserId  String?   @map("completed_by_user_id") @db.Uuid
-  refundedAt         DateTime? @map("refunded_at") @db.Timestamptz
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  institutionId     String    @map("institution_id") @db.Uuid
+  collectionId      String    @map("collection_id") @db.Uuid
+  amountMinor       BigInt    @map("amount_minor")
+  currency          String    @default("TRY") @db.VarChar(10)
+  reason            String    @db.Text
+  status            String    @default("REQUESTED") @db.VarChar(20) // REQUESTED, APPROVED, PROCESSING, COMPLETED, FAILED, CANCELLED
+  requestedByUserId String    @map("requested_by_user_id") @db.Uuid
+  approvedByUserId  String?   @map("approved_by_user_id") @db.Uuid
+  completedByUserId String?   @map("completed_by_user_id") @db.Uuid
+  refundedAt        DateTime? @map("refunded_at") @db.Timestamptz
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   collection  Collection         @relation(fields: [collectionId], references: [id], onDelete: Restrict)
   allocations RefundAllocation[]
@@ -909,17 +919,17 @@ model RefundAllocation {
 }
 
 model ReconciliationSession {
-  id                           String               @id @default(uuid()) @db.Uuid
-  tenantId                     String               @map("tenant_id") @db.Uuid
-  institutionId                String               @map("institution_id") @db.Uuid
-  financialAccountId           String               @map("financial_account_id") @db.Uuid
-  sourceType                   String               @map("source_type") @db.VarChar(50) // BANK, CARD, PAYMENT_PROVIDER, CASH_COUNT
-  sessionDate                  DateTime             @map("session_date") @db.Date
-  status                       String               @default("OPEN") @db.VarChar(20) // OPEN, MATCHED, DISCREPANCY, CLOSED
-  externalClosingBalanceMinor  BigInt               @map("external_closing_balance_minor")
-  ledgerClosingBalanceMinor    BigInt               @map("ledger_closing_balance_minor")
-  discrepancyMinor             BigInt               @default(0) @map("discrepancy_minor")
-  createdAt                    DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  id                          String   @id @default(uuid()) @db.Uuid
+  tenantId                    String   @map("tenant_id") @db.Uuid
+  institutionId               String   @map("institution_id") @db.Uuid
+  financialAccountId          String   @map("financial_account_id") @db.Uuid
+  sourceType                  String   @map("source_type") @db.VarChar(50) // BANK, CARD, PAYMENT_PROVIDER, CASH_COUNT
+  sessionDate                 DateTime @map("session_date") @db.Date
+  status                      String   @default("OPEN") @db.VarChar(20) // OPEN, MATCHED, DISCREPANCY, CLOSED
+  externalClosingBalanceMinor BigInt   @map("external_closing_balance_minor")
+  ledgerClosingBalanceMinor   BigInt   @map("ledger_closing_balance_minor")
+  discrepancyMinor            BigInt   @default(0) @map("discrepancy_minor")
+  createdAt                   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   items ReconciliationItem[]
 
@@ -946,4 +956,312 @@ model ReconciliationItem {
   @@index([tenantId])
   @@index([sessionId])
   @@map("reconciliation_items")
+}
+
+// ====================================================
+// PHASE 4: HR & PERSONNEL OPERATIONS
+// ====================================================
+
+model Department {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  institutionId      String   @map("institution_id") @db.Uuid
+  code               String   @db.VarChar(50)
+  name               String   @db.VarChar(100)
+  parentDepartmentId String?  @map("parent_department_id") @db.Uuid
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution             @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  positions   Position[]
+  assignments InstitutionAssignment[]
+
+  @@unique([institutionId, code], map: "uq_departments_institution_code")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("departments")
+}
+
+model Position {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  departmentId  String?  @map("department_id") @db.Uuid
+  code          String   @db.VarChar(50)
+  title         String   @db.VarChar(100)
+  description   String?  @db.Text
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution             @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  department  Department?             @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  assignments InstitutionAssignment[]
+
+  @@unique([institutionId, code], map: "uq_positions_institution_code")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("positions")
+}
+
+model EmployeeProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  personId       String   @map("person_id") @db.Uuid
+  employeeNumber String   @map("employee_number") @db.VarChar(50)
+  userId         String?  @map("user_id") @db.Uuid
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  person      Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
+  employments Employment[]
+  assignments InstitutionAssignment[]
+  schedules   EmployeeScheduleAssignment[]
+  events      AttendanceEvent[]
+  sessions    AttendanceSession[]
+  leaves      EmployeeLeave[]
+  documents   PersonnelDocument[]
+  tenant      Tenant                       @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, employeeNumber], map: "uq_employees_tenant_number")
+  @@index([tenantId])
+  @@index([personId])
+  @@map("employee_profiles")
+}
+
+model Employment {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  employeeId        String    @map("employee_id") @db.Uuid
+  contractType      String    @map("contract_type") @db.VarChar(50) // INDEFINITE, FIXED_TERM, PART_TIME, INTERN
+  status            String    @default("ACTIVE") @db.VarChar(50) // DRAFT, PENDING, PROBATION, ACTIVE, SUSPENDED, TERMINATED
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  probationEndDate  DateTime? @map("probation_end_date") @db.Date
+  terminationDate   DateTime? @map("termination_date") @db.Date
+  terminationReason String?   @map("termination_reason") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([organizationId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("employments")
+}
+
+model InstitutionAssignment {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  institutionId  String    @map("institution_id") @db.Uuid
+  campusId       String?   @map("campus_id") @db.Uuid
+  employeeId     String    @map("employee_id") @db.Uuid
+  departmentId   String?   @map("department_id") @db.Uuid
+  positionId     String?   @map("position_id") @db.Uuid
+  roleType       String    @map("role_type") @db.VarChar(50) // EDUCATOR, ADMINISTRATIVE, SUPPORT, MANAGEMENT
+  isPrimary      Boolean   @default(true) @map("is_primary")
+  workPercentage Int       @default(100) @map("work_percentage")
+  startDate      DateTime  @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  campus      Campus?         @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  department  Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  position    Position?       @relation(fields: [positionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([campusId])
+  @@index([employeeId])
+  @@map("institution_assignments")
+}
+
+model WorkSchedule {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  name          String   @db.VarChar(100)
+  code          String   @db.VarChar(50)
+  isFlexible    Boolean  @default(false) @map("is_flexible")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution                  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  rules       WorkScheduleRule[]
+  assignments EmployeeScheduleAssignment[]
+
+  @@unique([institutionId, code], map: "uq_work_schedules_code")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@map("work_schedules")
+}
+
+model WorkScheduleRule {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  workScheduleId String   @map("work_schedule_id") @db.Uuid
+  dayOfWeek      Int      @map("day_of_week")
+  startTime      String   @map("start_time") @db.VarChar(10)
+  endTime        String   @map("end_time") @db.VarChar(10)
+  breakMinutes   Int      @default(60) @map("break_minutes")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  workSchedule WorkSchedule @relation(fields: [workScheduleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workScheduleId])
+  @@map("work_schedule_rules")
+}
+
+model EmployeeScheduleAssignment {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  employeeId     String    @map("employee_id") @db.Uuid
+  workScheduleId String    @map("work_schedule_id") @db.Uuid
+  effectiveFrom  DateTime  @map("effective_from") @db.Date
+  effectiveUntil DateTime? @map("effective_until") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  employee     EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  workSchedule WorkSchedule    @relation(fields: [workScheduleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([workScheduleId])
+  @@map("employee_schedule_assignments")
+}
+
+model AttendanceEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  institutionId   String   @map("institution_id") @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  occurredAt      DateTime @map("occurred_at") @db.Timestamptz
+  eventType       String   @map("event_type") @db.VarChar(50) // CHECK_IN, CHECK_OUT
+  sourceType      String   @default("KIOSK") @map("source_type") @db.VarChar(50) // KIOSK, BIOMETRIC, MOBILE, MANUAL
+  deviceReference String?  @map("device_reference") @db.VarChar(100)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  institution Institution     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([employeeId])
+  @@index([occurredAt])
+  @@map("attendance_events")
+}
+
+model AttendanceSession {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  employeeId    String    @map("employee_id") @db.Uuid
+  workDate      DateTime  @map("work_date") @db.Date
+  checkInAt     DateTime  @map("check_in_at") @db.Timestamptz
+  checkOutAt    DateTime? @map("check_out_at") @db.Timestamptz
+  minutesWorked Int?      @map("minutes_worked")
+  status        String    @default("COMPLETED") @db.VarChar(50) // IN_PROGRESS, COMPLETED, INCOMPLETE, OVERNIGHT
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  employee EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([workDate])
+  @@map("attendance_sessions")
+}
+
+model LeaveEntitlement {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  employeeId   String    @map("employee_id") @db.Uuid
+  leaveType    String    @map("leave_type") @db.VarChar(50)
+  year         Int
+  entitledDays Decimal   @map("entitled_days") @db.Decimal(5, 1)
+  validFrom    DateTime  @map("valid_from") @db.Date
+  validUntil   DateTime? @map("valid_until") @db.Date
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([employeeId, leaveType, year], map: "uq_leave_entitlement_emp_year")
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("leave_entitlements")
+}
+
+model LeaveTransaction {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  leaveType       String   @map("leave_type") @db.VarChar(50)
+  transactionType String   @map("transaction_type") @db.VarChar(50) // ENTITLEMENT_GRANT, LEAVE_CONSUMPTION, LEAVE_CANCELLATION, EXPIRED
+  daysAmount      Decimal  @map("days_amount") @db.Decimal(5, 1)
+  referenceId     String?  @map("reference_id") @db.Uuid
+  postedAt        DateTime @default(now()) @map("posted_at") @db.Timestamptz
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([leaveType])
+  @@map("leave_transactions")
+}
+
+model EmployeeLeave {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  institutionId     String    @map("institution_id") @db.Uuid
+  employeeId        String    @map("employee_id") @db.Uuid
+  leaveType         String    @map("leave_type") @db.VarChar(50)
+  unit              String    @default("FULL_DAY") @db.VarChar(20)
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime  @map("end_date") @db.Date
+  unitsCount        Decimal   @map("units_count") @db.Decimal(5, 1)
+  reason            String?   @db.Text
+  status            String    @default("REQUESTED") @db.VarChar(20)
+  requestedByUserId String    @map("requested_by_user_id") @db.Uuid
+  approvedByUserId  String?   @map("approved_by_user_id") @db.Uuid
+  approvedAt        DateTime? @map("approved_at") @db.Timestamptz
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("employee_leaves")
+}
+
+model PersonnelDocument {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @map("tenant_id") @db.Uuid
+  employeeId             String    @map("employee_id") @db.Uuid
+  documentType           String    @map("document_type") @db.VarChar(50)
+  documentTitle          String    @map("document_title") @db.VarChar(255)
+  fileReference          String    @map("file_reference") @db.VarChar(255)
+  securityClassification String    @default("STANDARD") @map("security_classification") @db.VarChar(20)
+  expiryDate             DateTime? @map("expiry_date") @db.Date
+  status                 String    @default("VALID") @db.VarChar(20)
+  verifiedByUserId       String?   @map("verified_by_user_id") @db.Uuid
+  verifiedAt             DateTime? @map("verified_at") @db.Timestamptz
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  employee EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([securityClassification])
+  @@map("personnel_documents")
 }

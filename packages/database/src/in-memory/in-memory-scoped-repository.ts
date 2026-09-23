@@ -31,6 +31,20 @@ export const globalDbStorage = {
   refundAllocations: new Map<UUID, any>(),
   reconciliationSessions: new Map<UUID, any>(),
   reconciliationItems: new Map<UUID, any>(),
+  departments: new Map<UUID, any>(),
+  positions: new Map<UUID, any>(),
+  employeeProfiles: new Map<UUID, any>(),
+  employments: new Map<UUID, any>(),
+  institutionAssignments: new Map<UUID, any>(),
+  workSchedules: new Map<UUID, any>(),
+  workScheduleRules: new Map<UUID, any>(),
+  employeeScheduleAssignments: new Map<UUID, any>(),
+  attendanceEvents: new Map<UUID, any>(),
+  attendanceSessions: new Map<UUID, any>(),
+  leaveEntitlements: new Map<UUID, any>(),
+  leaveTransactions: new Map<UUID, any>(),
+  employeeLeaves: new Map<UUID, any>(),
+  personnelDocuments: new Map<UUID, any>(),
   clear(): void {
     this.persons.clear();
     this.learners.clear();
@@ -52,6 +66,20 @@ export const globalDbStorage = {
     this.refundAllocations.clear();
     this.reconciliationSessions.clear();
     this.reconciliationItems.clear();
+    this.departments.clear();
+    this.positions.clear();
+    this.employeeProfiles.clear();
+    this.employments.clear();
+    this.institutionAssignments.clear();
+    this.workSchedules.clear();
+    this.workScheduleRules.clear();
+    this.employeeScheduleAssignments.clear();
+    this.attendanceEvents.clear();
+    this.attendanceSessions.clear();
+    this.leaveEntitlements.clear();
+    this.leaveTransactions.clear();
+    this.employeeLeaves.clear();
+    this.personnelDocuments.clear();
   },
 };
 
@@ -361,6 +389,124 @@ export class InMemoryScopedRefundRepository extends ScopedRepositoryBase<any> {
   public async listByCollection(collectionId: UUID): Promise<any[]> {
     return Array.from(globalDbStorage.refunds.values()).filter(
       r => r.tenantId === this.tenantId && r.collectionId === collectionId
+    );
+  }
+}
+
+export class InMemoryScopedEmployeeRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.employeeProfiles.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Employee ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async create(data: any): Promise<any> {
+    // Unique employeeNumber per tenant
+    const existing = Array.from(globalDbStorage.employeeProfiles.values()).find(
+      e => e.tenantId === this.tenantId && e.employeeNumber === data.employeeNumber
+    );
+    if (existing) {
+      throw new Error(`Employee number '${data.employeeNumber}' already exists in tenant.`);
+    }
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.employeeProfiles.set(item.id, item);
+    return item;
+  }
+  public async list(): Promise<any[]> {
+    return Array.from(globalDbStorage.employeeProfiles.values()).filter(e => e.tenantId === this.tenantId);
+  }
+}
+
+export class InMemoryScopedEmploymentRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.employments.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.employments.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Employment ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Employment ${id} not found`);
+    const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
+    globalDbStorage.employments.set(id, updated);
+    return updated;
+  }
+  public async findByEmployee(employeeId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.employments.values()).filter(
+      e => e.tenantId === this.tenantId && e.employeeId === employeeId
+    );
+  }
+}
+
+export class InMemoryScopedAssignmentRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.institutionAssignments.set(item.id, item);
+    return item;
+  }
+  public async findByEmployee(employeeId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.institutionAssignments.values()).filter(
+      a => a.tenantId === this.tenantId && a.employeeId === employeeId
+    );
+  }
+}
+
+export class InMemoryScopedLeaveRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.employeeLeaves.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.employeeLeaves.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Leave ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Leave ${id} not found`);
+    const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
+    globalDbStorage.employeeLeaves.set(id, updated);
+    return updated;
+  }
+  public async addTransaction(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, postedAt: new Date().toISOString() };
+    globalDbStorage.leaveTransactions.set(item.id, item);
+    return item;
+  }
+  public async getTransactionsByEmployee(employeeId: UUID, leaveType?: string): Promise<any[]> {
+    return Array.from(globalDbStorage.leaveTransactions.values()).filter(
+      t => t.tenantId === this.tenantId && t.employeeId === employeeId && (!leaveType || t.leaveType === leaveType)
+    );
+  }
+}
+
+export class InMemoryScopedAttendanceRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async recordEvent(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.attendanceEvents.set(item.id, item);
+    return item;
+  }
+  public async listEvents(employeeId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.attendanceEvents.values()).filter(
+      e => e.tenantId === this.tenantId && e.employeeId === employeeId
     );
   }
 }
