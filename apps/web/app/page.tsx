@@ -1,5 +1,4 @@
-import React from 'react';
-import { CoreAdministrationWorkbench } from './admin/workbench.js';
+import { CoreAdministrationWorkbench } from './admin/workbench';
 
 export default function HomePage() {
   return <CoreAdministrationWorkbench />;
