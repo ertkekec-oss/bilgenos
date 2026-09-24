@@ -32,12 +32,199 @@ type ActiveTab =
   | 'PERSONNEL'
   | 'ASSIGNMENTS'
   | 'LEAVES'
-  | 'ATTENDANCE';
+  | 'ATTENDANCE'
+  | 'PHYSICAL_SPACES'
+  | 'ASSETS'
+  | 'ASSET_CUSTODY'
+  | 'ASSET_TRANSFERS';
 
 export function CoreAdministrationWorkbench(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<ActiveTab>('CAPABILITIES');
 
-  // Phase 4 HR & Workforce Seed Data (Excel-grade Corporate)
+  // Phase 5 Campus, Physical Spaces & Asset Seed Data
+  const [physicalSpaces] = useState([
+    {
+      id: 'sp-101',
+      campus: 'Merkez Kampüs',
+      building: 'A Blok (Fen ve İdare Binası)',
+      floor: '2. Kat',
+      code: 'A-204',
+      name: 'Fizik & Robotik Laboratuvarı',
+      spaceType: 'LABORATORY',
+      capacity: 32,
+      area: '84 m²',
+      status: 'ACTIVE',
+      assetCount: 18,
+    },
+    {
+      id: 'sp-102',
+      campus: 'Merkez Kampüs',
+      building: 'A Blok (Fen ve İdare Binası)',
+      floor: '1. Kat',
+      code: 'A-108',
+      name: 'Akademik Zümre Odası (Sayısal)',
+      spaceType: 'OFFICE',
+      capacity: 12,
+      area: '45 m²',
+      status: 'ACTIVE',
+      assetCount: 14,
+    },
+    {
+      id: 'sp-103',
+      campus: 'Merkez Kampüs',
+      building: 'B Blok (Konferans & Spor)',
+      floor: 'Zemin Kat',
+      code: 'B-Z01',
+      name: 'Büyük Konferans & Gösteri Salonu',
+      spaceType: 'OTHER',
+      capacity: 350,
+      area: '420 m²',
+      status: 'ACTIVE',
+      assetCount: 22,
+    },
+    {
+      id: 'sp-104',
+      campus: 'Kızılay Kampüsü',
+      building: 'YKS Hazırlık Ana Bina',
+      floor: '3. Kat',
+      code: 'K-302',
+      name: '302 Nolu Seminer Odası',
+      spaceType: 'CLASSROOM',
+      capacity: 24,
+      area: '52 m²',
+      status: 'TEMPORARILY_UNAVAILABLE',
+      assetCount: 6,
+    },
+  ]);
+
+  const [assets] = useState([
+    {
+      id: 'ast-101',
+      assetNumber: 'AST-2026-000042',
+      assetTag: 'BGN-IT-0042',
+      name: 'Apple MacBook Pro 16" M3 Max',
+      category: 'Bilişim & IT Ekipmanı',
+      manufacturer: 'Apple',
+      model: 'MacBook Pro 16',
+      serialNumber: 'C02G9012MD6R',
+      location: 'Merkez Kampüs / A Blok / 1. Kat / A-108',
+      custodian: 'Ahmet Faruk Yılmaz (Fizik Zümre Bşk.)',
+      condition: 'GOOD',
+      status: 'IN_USE',
+      warrantyEndDate: '2027-09-01',
+      warrantyStatus: 'ACTIVE',
+    },
+    {
+      id: 'ast-102',
+      assetNumber: 'AST-2026-000043',
+      assetTag: 'BGN-IT-0043',
+      name: 'Lenovo ThinkPad P16 Gen 2',
+      category: 'Bilişim & IT Ekipmanı',
+      manufacturer: 'Lenovo',
+      model: 'ThinkPad P16',
+      serialNumber: 'PF3X8921',
+      location: 'Merkez Kampüs / A Blok / 1. Kat / A-108',
+      custodian: 'Zeynep Kaya Çelik (Matematik Öğrt.)',
+      condition: 'NEW',
+      status: 'IN_USE',
+      warrantyEndDate: '2027-11-15',
+      warrantyStatus: 'ACTIVE',
+    },
+    {
+      id: 'ast-103',
+      assetNumber: 'AST-2026-000088',
+      assetTag: 'BGN-LAB-0012',
+      name: 'Leica DM500 Dijital Araştırma Mikroskobu',
+      category: 'Laboratuvar & Deney Ekipmanı',
+      manufacturer: 'Leica Microsystems',
+      model: 'DM500',
+      serialNumber: 'LC-99412',
+      location: 'Merkez Kampüs / A Blok / 2. Kat / A-204',
+      custodian: 'Demirbaş Sorumlusu (Fen Bölümü)',
+      condition: 'GOOD',
+      status: 'AVAILABLE',
+      warrantyEndDate: '2028-01-20',
+      warrantyStatus: 'ACTIVE',
+    },
+    {
+      id: 'ast-104',
+      assetNumber: 'AST-2026-000105',
+      assetTag: 'BGN-AV-0005',
+      name: 'Epson EB-PU2220B Lazer Projeksiyon (20.000 Lümen)',
+      category: 'Ses & Görüntü Ekipmanı',
+      manufacturer: 'Epson',
+      model: 'EB-PU2220B',
+      serialNumber: 'EP-441209',
+      location: 'Merkez Kampüs / B Blok / Zemin Kat / B-Z01',
+      custodian: 'Teknik Hizmetler Masası',
+      condition: 'FAIR',
+      status: 'IN_REPAIR',
+      warrantyEndDate: '2025-06-01',
+      warrantyStatus: 'EXPIRED',
+    },
+  ]);
+
+  const [assetCustodies] = useState([
+    {
+      id: 'cst-01',
+      employeeName: 'Ahmet Faruk Yılmaz',
+      employeeNumber: 'EMP-2026-0042',
+      institution: 'Bilgen Fen ve Anadolu Lisesi',
+      assetNumber: 'AST-2026-000042',
+      assetName: 'Apple MacBook Pro 16" M3 Max',
+      assignedAt: '2024-09-01 09:30',
+      returnedAt: '-',
+      status: 'ACTIVE',
+      assignedBy: 'Mehmet Akif Demir (BT Direktörü)',
+      notes: 'Zümre başkanlığı akademik geliştirme ve robotik laboratuvar koordinasyonu için zimmetlendi.',
+    },
+    {
+      id: 'cst-02',
+      employeeName: 'Zeynep Kaya Çelik',
+      employeeNumber: 'EMP-2026-0089',
+      institution: 'Bilgen Fen ve Anadolu Lisesi',
+      assetNumber: 'AST-2026-000043',
+      assetName: 'Lenovo ThinkPad P16 Gen 2',
+      assignedAt: '2024-11-20 14:15',
+      returnedAt: '-',
+      status: 'ACTIVE',
+      assignedBy: 'Mehmet Akif Demir (BT Direktörü)',
+      notes: 'Matematik zümresi dijital içerik hazırlama için tahsis edildi.',
+    },
+  ]);
+
+  const [assetTransfers] = useState([
+    {
+      id: 'trf-101',
+      transferNumber: 'TRF-2026-00012',
+      assetNumber: 'AST-2026-000065',
+      assetName: 'BenQ RP8602K 86" İnteraktif Akıllı Tahta',
+      fromLocation: 'Merkez Kampüs / A Blok / A-102',
+      toLocation: 'Kızılay Kampüsü / YKS Ana Bina / K-302',
+      requestedBy: 'Dr. Selim Candan (YKS Danışmanı)',
+      approvedBy: 'Kemalettin Bilgen (Genel Müdür)',
+      status: 'COMPLETED',
+      requestedAt: '2026-09-18 10:00',
+      completedAt: '2026-09-19 16:30',
+      reason: 'YKS Hazırlık Merkezi yeni seminer sınıfı donatımı',
+    },
+    {
+      id: 'trf-102',
+      transferNumber: 'TRF-2026-00013',
+      assetNumber: 'AST-2026-000105',
+      assetName: 'Epson EB-PU2220B Lazer Projeksiyon',
+      fromLocation: 'Merkez Kampüs / B Blok / B-Z01',
+      toLocation: 'Çankaya Kampüsü / Yabancı Dil Konferans',
+      requestedBy: 'Teknik Servis Sorumlusu',
+      approvedBy: 'BEKLEMEDE (Maker-Checker)',
+      status: 'REQUESTED',
+      requestedAt: '2026-09-24 15:45',
+      completedAt: '-',
+      reason: 'Bölge konferansı sunumu için geçici transfer talebi',
+    },
+  ]);
+
+    // Phase 4 HR & Workforce Seed Data (Excel-grade Corporate)
   const [employees] = useState([
     {
       id: 'emp-101',
@@ -511,6 +698,10 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
     { id: 'ASSIGNMENTS', label: '16. İstihdam & Görevlendirme' },
     { id: 'LEAVES', label: '17. İzin & Mazeret Yönetimi' },
     { id: 'ATTENDANCE', label: '18. Personel Devam & Puantaj' },
+    { id: 'PHYSICAL_SPACES', label: '19. Fiziksel Yapı & Mekanlar' },
+    { id: 'ASSETS', label: '20. Demirbaş & Varlık Yönetimi' },
+    { id: 'ASSET_CUSTODY', label: '21. Zimmet & Sorumluluk' },
+    { id: 'ASSET_TRANSFERS', label: '22. Varlık Transferleri' },
   ];
 
   return (
@@ -1328,6 +1519,142 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
                   { key: 'discrepancy', header: 'Vardiya Sapması', width: '160px', render: (row: any) => <span style={{ color: row.discrepancy.includes('Geç') ? BILGEN_TOKENS.colors.danger : BILGEN_TOKENS.colors.textSecondary }}>{row.discrepancy}</span> },
                   { key: 'verificationDevice', header: 'Doğrulama Terminali', width: '220px' },
                   { key: 'status', header: 'Durum', width: '100px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'PRESENT' ? 'success' : 'default'} /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'PHYSICAL_SPACES' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Fiziksel Yapı & Mekanlar (Physical Hierarchy: Campus → Building → Floor → Space)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Mekan (Space) operasyonel fiziksel odadır; akademik derslik değildir (PHY-006). Müfredat ve şube bilgisi taşımaz.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <StatusBadge label="HIERARCHY: CANONICAL" variant="success" />
+                  <StatusBadge label="SPACE ≠ ACADEMIC CLASSROOM" variant="default" />
+                </div>
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={physicalSpaces}
+                columns={[
+                  { key: 'code', header: 'Mekan Kodu', width: '100px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.code}</strong> },
+                  { key: 'name', header: 'Mekan Tanımı', width: '220px' },
+                  { key: 'campus', header: 'Kampüs', width: '140px' },
+                  { key: 'building', header: 'Bina', width: '200px' },
+                  { key: 'floor', header: 'Kat', width: '90px' },
+                  { key: 'spaceType', header: 'Mekan Türü', width: '120px', render: (row: any) => <StatusBadge label={row.spaceType} variant="default" /> },
+                  { key: 'capacity', header: 'Kapasite', width: '80px', isNumeric: true, render: (row: any) => <span>{row.capacity} kişi</span> },
+                  { key: 'area', header: 'Alan', width: '80px', isNumeric: true },
+                  { key: 'assetCount', header: 'Demirbaş', width: '80px', isNumeric: true, render: (row: any) => <strong style={{ color: BILGEN_TOKENS.colors.accent }}>{row.assetCount} adet</strong> },
+                  { key: 'status', header: 'Durum', width: '110px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'ACTIVE' ? 'success' : 'warning'} /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ASSETS' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Demirbaş & Fiziksel Varlık Yönetimi (Asset System of Record)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Varlık münferit takip edilen dayanıklı kalemdir (Asset ≠ Inventory). Satın alma bedeli muhasebe defter değeri değildir (PHY-010).
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <StatusBadge label="ASSET ≠ INVENTORY" variant="success" />
+                  <StatusBadge label="WARRANTY TRACKING: ON" variant="default" />
+                </div>
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={assets}
+                columns={[
+                  { key: 'assetNumber', header: 'Varlık No', width: '140px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.assetNumber}</strong> },
+                  { key: 'name', header: 'Varlık Adı & Tanımı', width: '220px' },
+                  { key: 'category', header: 'Kategori', width: '160px' },
+                  { key: 'manufacturer', header: 'Marka / Model', width: '140px', render: (row: any) => <span>{row.manufacturer} {row.model}</span> },
+                  { key: 'serialNumber', header: 'Seri Numarası', width: '120px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono, fontSize: '11px' }}>{row.serialNumber}</span> },
+                  { key: 'location', header: 'Bulunduğu Konum', width: '220px' },
+                  { key: 'custodian', header: 'Sorumlu Personel', width: '180px' },
+                  { key: 'condition', header: 'Kondisyon', width: '90px', render: (row: any) => <StatusBadge label={row.condition} variant={row.condition === 'NEW' || row.condition === 'GOOD' ? 'success' : 'default'} /> },
+                  { key: 'status', header: 'Durum', width: '100px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'AVAILABLE' ? 'success' : row.status === 'IN_USE' ? 'default' : 'warning'} /> },
+                  { key: 'warrantyEndDate', header: 'Garanti Bitiş', width: '110px' },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ASSET_CUSTODY' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Zimmet & Kişisel Sorumluluk Yönetimi (Asset Custody Ledger)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Konum ile zimmet birbirinden bağımsızdır (PHY-008). Bir varlığın aynı anda en fazla bir aktif sorumlusu olabilir (PHY-016).
+                  </p>
+                </div>
+                <StatusBadge label="ONE ACTIVE CUSTODIAN: ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={assetCustodies}
+                columns={[
+                  { key: 'employeeName', header: 'Zimmetli Personel', width: '170px' },
+                  { key: 'employeeNumber', header: 'Sicil No', width: '120px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.employeeNumber}</strong> },
+                  { key: 'institution', header: 'Bağlı Olduğu Kurum', width: '180px' },
+                  { key: 'assetNumber', header: 'Varlık No', width: '140px', render: (row: any) => <span style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.assetNumber}</span> },
+                  { key: 'assetName', header: 'Varlık Tanımı', width: '220px' },
+                  { key: 'assignedAt', header: 'Zimmet Tarihi', width: '130px' },
+                  { key: 'status', header: 'Durum', width: '90px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'ACTIVE' ? 'success' : 'default'} /> },
+                  { key: 'assignedBy', header: 'Tahsis Eden Yetkili', width: '180px' },
+                  { key: 'notes', header: 'Tahsis Açıklaması' },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ASSET_TRANSFERS' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                    Kurumlar & Kampüsler Arası Varlık Transferleri (Asset Transfers)
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                    Transferler onay akışına (Maker-Checker) tabidir (PHY-018). Transfer tamamlandığında konum geçmişi ve güncel konum atomik olarak güncellenir.
+                  </p>
+                </div>
+                <StatusBadge label="MAKER-CHECKER: ENFORCED" variant="success" />
+              </div>
+
+              <ExcelTable
+                keyExtractor={(row: any) => row.id}
+                data={assetTransfers}
+                columns={[
+                  { key: 'transferNumber', header: 'Transfer No', width: '130px', render: (row: any) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.transferNumber}</strong> },
+                  { key: 'assetName', header: 'Transfer Edilen Varlık', width: '220px' },
+                  { key: 'fromLocation', header: 'Çıkış Konumu', width: '220px' },
+                  { key: 'toLocation', header: 'Hedef Konum', width: '220px' },
+                  { key: 'requestedBy', header: 'Talep Eden', width: '170px' },
+                  { key: 'approvedBy', header: 'Onaylayan', width: '170px' },
+                  { key: 'status', header: 'Durum', width: '110px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'COMPLETED' ? 'success' : 'warning'} /> },
+                  { key: 'requestedAt', header: 'Talep Tarihi', width: '130px' },
+                  { key: 'reason', header: 'Transfer Gerekçesi' },
                 ]}
               />
             </div>

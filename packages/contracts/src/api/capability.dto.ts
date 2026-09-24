@@ -17,6 +17,11 @@ export type CapabilityKey =
   | 'CRM'
   | 'COMMUNICATION'
   | 'CAMPUS'
+  | 'CAMPUS_OPERATIONS'
+  | 'PHYSICAL_SPACES'
+  | 'ASSET_MANAGEMENT'
+  | 'ASSET_CUSTODY'
+  | 'ASSET_TRANSFER'
   | 'AI';
 
 export interface InstitutionCapabilityDto extends BaseEntityDto {

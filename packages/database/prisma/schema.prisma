@@ -26,6 +26,11 @@ model Tenant {
   learners              Learner[]
   guardianRelationships GuardianRelationship[]
   employeeProfiles      EmployeeProfile[]
+  buildings             Building[]
+  floors                Floor[]
+  spaces                Space[]
+  assetCategories       AssetCategory[]
+  assets                Asset[]
   enrollments           Enrollment[]
   auditLogs             AuditLog[]
 
@@ -44,6 +49,7 @@ model Organization {
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   institutions Institution[]
   employments  Employment[]
+  assets       Asset[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -72,6 +78,7 @@ model Institution {
   workSchedules    WorkSchedule[]
   attendanceEvents AttendanceEvent[]
   employeeLeaves   EmployeeLeave[]
+  buildings        Building[]
 
   @@index([organizationId])
   @@map("institutions")
@@ -107,6 +114,7 @@ model Campus {
   cohorts     EducationCohort[]
   enrollments Enrollment[]
   assignments InstitutionAssignment[]
+  buildings   Building[]
 
   @@index([institutionId])
   @@map("campuses")
@@ -1015,15 +1023,16 @@ model EmployeeProfile {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  person      Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
-  employments Employment[]
-  assignments InstitutionAssignment[]
-  schedules   EmployeeScheduleAssignment[]
-  events      AttendanceEvent[]
-  sessions    AttendanceSession[]
-  leaves      EmployeeLeave[]
-  documents   PersonnelDocument[]
-  tenant      Tenant                       @relation(fields: [tenantId], references: [id])
+  person         Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
+  employments    Employment[]
+  assignments    InstitutionAssignment[]
+  schedules      EmployeeScheduleAssignment[]
+  events         AttendanceEvent[]
+  sessions       AttendanceSession[]
+  leaves         EmployeeLeave[]
+  documents      PersonnelDocument[]
+  assetCustodies AssetCustody[]
+  tenant         Tenant                       @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, employeeNumber], map: "uq_employees_tenant_number")
   @@index([tenantId])
@@ -1264,4 +1273,256 @@ model PersonnelDocument {
   @@index([employeeId])
   @@index([securityClassification])
   @@map("personnel_documents")
+}
+
+// ====================================================
+// 10. PHASE 5: CAMPUS, FACILITY & PHYSICAL ASSET OPERATIONS
+// ====================================================
+
+model Building {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  institutionId String    @map("institution_id") @db.Uuid
+  campusId      String    @map("campus_id") @db.Uuid
+  code          String    @db.VarChar(50)
+  name          String    @db.VarChar(255)
+  buildingType  String    @default("EDUCATION") @map("building_type") @db.VarChar(50)
+  status        String    @default("ACTIVE") @db.VarChar(50) // PLANNED, ACTIVE, TEMPORARILY_CLOSED, INACTIVE, DECOMMISSIONED
+  openedAt      DateTime? @map("opened_at") @db.Date
+  closedAt      DateTime? @map("closed_at") @db.Date
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  campus      Campus      @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  floors      Floor[]
+  spaces      Space[]
+
+  @@unique([tenantId, campusId, code], map: "uq_buildings_campus_code")
+  @@index([tenantId])
+  @@index([campusId])
+  @@map("buildings")
+}
+
+model Floor {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  campusId      String   @map("campus_id") @db.Uuid
+  buildingId    String   @map("building_id") @db.Uuid
+  code          String   @db.VarChar(50)
+  name          String   @db.VarChar(100)
+  levelNumber   Int?     @map("level_number")
+  sortOrder     Int      @default(0) @map("sort_order")
+  status        String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, INACTIVE, DECOMMISSIONED
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  building Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  spaces   Space[]
+
+  @@unique([tenantId, buildingId, code], map: "uq_floors_building_code")
+  @@index([tenantId])
+  @@index([buildingId])
+  @@map("floors")
+}
+
+model Space {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  institutionId    String   @map("institution_id") @db.Uuid
+  campusId         String   @map("campus_id") @db.Uuid
+  buildingId       String   @map("building_id") @db.Uuid
+  floorId          String   @map("floor_id") @db.Uuid
+  code             String   @db.VarChar(50)
+  name             String   @db.VarChar(150)
+  spaceType        String   @default("CLASSROOM") @map("space_type") @db.VarChar(50)
+  capacity         Int?
+  areaSquareMeters Decimal? @map("area_sqm") @db.Decimal(8, 2)
+  status           String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, TEMPORARILY_UNAVAILABLE, RESTRICTED, INACTIVE, DECOMMISSIONED
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  building              Building               @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floor                 Floor                  @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  assets                Asset[]
+  locationHistoriesTo   AssetLocationHistory[] @relation("HistoryToSpace")
+  locationHistoriesFrom AssetLocationHistory[] @relation("HistoryFromSpace")
+
+  @@unique([tenantId, floorId, code], map: "uq_spaces_floor_code")
+  @@index([tenantId])
+  @@index([buildingId])
+  @@index([floorId])
+  @@index([status])
+  @@map("spaces")
+}
+
+model AssetCategory {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String   @map("tenant_id") @db.Uuid
+  code                 String   @db.VarChar(50)
+  name                 String   @db.VarChar(150)
+  description          String?  @db.Text
+  requiresSerialNumber Boolean  @default(false) @map("requires_serial_number")
+  warrantyTracked      Boolean  @default(true) @map("warranty_tracked")
+  maintenanceRelevant  Boolean  @default(true) @map("maintenance_relevant")
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assets Asset[]
+
+  @@unique([tenantId, code], map: "uq_asset_categories_tenant_code")
+  @@index([tenantId])
+  @@map("asset_categories")
+}
+
+model Asset {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  institutionId     String?   @map("institution_id") @db.Uuid
+  assetNumber       String    @map("asset_number") @db.VarChar(100)
+  assetTag          String?   @map("asset_tag") @db.VarChar(100)
+  name              String    @db.VarChar(255)
+  description       String?   @db.Text
+  categoryId        String    @map("category_id") @db.Uuid
+  manufacturer      String?   @db.VarChar(100)
+  model             String?   @db.VarChar(100)
+  serialNumber      String?   @map("serial_number") @db.VarChar(100)
+  acquisitionDate   DateTime? @map("acquisition_date") @db.Date
+  purchaseCostMinor BigInt?   @map("purchase_cost_minor")
+  purchaseCurrency  String?   @default("TRY") @map("purchase_currency") @db.VarChar(10)
+  warrantyStartDate DateTime? @map("warranty_start_date") @db.Date
+  warrantyEndDate   DateTime? @map("warranty_end_date") @db.Date
+  status            String    @default("AVAILABLE") @db.VarChar(50)
+  condition         String    @default("GOOD") @db.VarChar(50)
+  currentSpaceId    String?   @map("current_space_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  organization      Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category          AssetCategory          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  currentSpace      Space?                 @relation(fields: [currentSpaceId], references: [id], onDelete: SetNull)
+  locationHistories AssetLocationHistory[]
+  custodies         AssetCustody[]
+  transfers         AssetTransfer[]
+  documents         AssetDocument[]
+
+  @@unique([tenantId, assetNumber], map: "uq_assets_tenant_number")
+  @@index([tenantId])
+  @@index([organizationId])
+  @@index([institutionId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([currentSpaceId])
+  @@index([warrantyEndDate])
+  @@map("assets")
+}
+
+model AssetLocationHistory {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  assetId           String   @map("asset_id") @db.Uuid
+  fromSpaceId       String?  @map("from_space_id") @db.Uuid
+  toSpaceId         String?  @map("to_space_id") @db.Uuid
+  effectiveAt       DateTime @default(now()) @map("effective_at") @db.Timestamptz
+  movementType      String   @default("INITIAL_PLACEMENT") @map("movement_type") @db.VarChar(50)
+  reason            String?  @db.Text
+  performedByUserId String   @map("performed_by_user_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fromSpace Space? @relation("HistoryFromSpace", fields: [fromSpaceId], references: [id], onDelete: SetNull)
+  toSpace   Space? @relation("HistoryToSpace", fields: [toSpaceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([effectiveAt])
+  @@map("asset_location_histories")
+}
+
+model AssetCustody {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  assetId          String    @map("asset_id") @db.Uuid
+  employeeId       String    @map("employee_id") @db.Uuid
+  assignedAt       DateTime  @default(now()) @map("assigned_at") @db.Timestamptz
+  returnedAt       DateTime? @map("returned_at") @db.Timestamptz
+  status           String    @default("ACTIVE") @db.VarChar(50)
+  assignedByUserId String    @map("assigned_by_user_id") @db.Uuid
+  returnedByUserId String?   @map("returned_by_user_id") @db.Uuid
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  asset    Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  employee EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("asset_custodies")
+}
+
+model AssetTransfer {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  assetId           String    @map("asset_id") @db.Uuid
+  fromInstitutionId String?   @map("from_institution_id") @db.Uuid
+  fromCampusId      String?   @map("from_campus_id") @db.Uuid
+  fromSpaceId       String?   @map("from_space_id") @db.Uuid
+  toInstitutionId   String?   @map("to_institution_id") @db.Uuid
+  toCampusId        String?   @map("to_campus_id") @db.Uuid
+  toSpaceId         String?   @map("to_space_id") @db.Uuid
+  status            String    @default("REQUESTED") @db.VarChar(50)
+  requestedByUserId String    @map("requested_by_user_id") @db.Uuid
+  approvedByUserId  String?   @map("approved_by_user_id") @db.Uuid
+  completedByUserId String?   @map("completed_by_user_id") @db.Uuid
+  requestedAt       DateTime  @default(now()) @map("requested_at") @db.Timestamptz
+  approvedAt        DateTime? @map("approved_at") @db.Timestamptz
+  completedAt       DateTime? @map("completed_at") @db.Timestamptz
+  reason            String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([status])
+  @@map("asset_transfers")
+}
+
+model AssetDocument {
+  id                     String   @id @default(uuid()) @db.Uuid
+  tenantId               String   @map("tenant_id") @db.Uuid
+  assetId                String   @map("asset_id") @db.Uuid
+  documentType           String   @map("document_type") @db.VarChar(50)
+  title                  String   @db.VarChar(255)
+  fileReference          String   @map("file_reference") @db.VarChar(500)
+  securityClassification String   @default("STANDARD") @map("security_classification") @db.VarChar(50)
+  uploadedByUserId       String   @map("uploaded_by_user_id") @db.Uuid
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_documents")
+}
+
+model AssetNumberSequence {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  scopeKey   String   @map("scope_key") @db.VarChar(100)
+  lastNumber Int      @default(0) @map("last_number")
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([tenantId, scopeKey], map: "uq_asset_seq_tenant_scope")
+  @@map("asset_number_sequences")
 }

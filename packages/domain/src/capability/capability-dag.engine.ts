@@ -34,6 +34,11 @@ export class CapabilityDagEngine {
     this.addRule('CRM', [], true);
     this.addRule('COMMUNICATION', [], true);
     this.addRule('CAMPUS', [], true);
+    this.addRule('CAMPUS_OPERATIONS', [], true);
+    this.addRule('PHYSICAL_SPACES', ['CAMPUS_OPERATIONS'], true);
+    this.addRule('ASSET_MANAGEMENT', ['CAMPUS_OPERATIONS'], true);
+    this.addRule('ASSET_CUSTODY', ['ASSET_MANAGEMENT'], true);
+    this.addRule('ASSET_TRANSFER', ['ASSET_MANAGEMENT'], true);
     this.addRule('AI', ['ACADEMIC'], false);
   }
 

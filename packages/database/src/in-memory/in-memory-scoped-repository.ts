@@ -45,6 +45,16 @@ export const globalDbStorage = {
   leaveTransactions: new Map<UUID, any>(),
   employeeLeaves: new Map<UUID, any>(),
   personnelDocuments: new Map<UUID, any>(),
+  buildings: new Map<UUID, any>(),
+  floors: new Map<UUID, any>(),
+  spaces: new Map<UUID, any>(),
+  assetCategories: new Map<UUID, any>(),
+  assets: new Map<UUID, any>(),
+  assetLocationHistories: new Map<UUID, any>(),
+  assetCustodies: new Map<UUID, any>(),
+  assetTransfers: new Map<UUID, any>(),
+  assetDocuments: new Map<UUID, any>(),
+  assetNumberSequences: new Map<string, number>(),
   clear(): void {
     this.persons.clear();
     this.learners.clear();
@@ -80,6 +90,16 @@ export const globalDbStorage = {
     this.leaveTransactions.clear();
     this.employeeLeaves.clear();
     this.personnelDocuments.clear();
+    this.buildings.clear();
+    this.floors.clear();
+    this.spaces.clear();
+    this.assetCategories.clear();
+    this.assets.clear();
+    this.assetLocationHistories.clear();
+    this.assetCustodies.clear();
+    this.assetTransfers.clear();
+    this.assetDocuments.clear();
+    this.assetNumberSequences.clear();
   },
 };
 
@@ -507,6 +527,210 @@ export class InMemoryScopedAttendanceRepository extends ScopedRepositoryBase<any
   public async listEvents(employeeId: UUID): Promise<any[]> {
     return Array.from(globalDbStorage.attendanceEvents.values()).filter(
       e => e.tenantId === this.tenantId && e.employeeId === employeeId
+    );
+  }
+}
+
+export class InMemoryScopedBuildingRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.buildings.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.buildings.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Building ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async findByCampus(campusId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.buildings.values()).filter(
+      b => b.tenantId === this.tenantId && b.campusId === campusId
+    );
+  }
+}
+
+export class InMemoryScopedFloorRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.floors.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.floors.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Floor ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async findByBuilding(buildingId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.floors.values()).filter(
+      f => f.tenantId === this.tenantId && f.buildingId === buildingId
+    );
+  }
+}
+
+export class InMemoryScopedSpaceRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.spaces.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.spaces.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Space ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Space ${id} not found`);
+    const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
+    globalDbStorage.spaces.set(id, updated);
+    return updated;
+  }
+  public async findByFloor(floorId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.spaces.values()).filter(
+      s => s.tenantId === this.tenantId && s.floorId === floorId
+    );
+  }
+}
+
+export class InMemoryScopedAssetCategoryRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.assetCategories.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.assetCategories.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: AssetCategory ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+}
+
+export class InMemoryScopedAssetRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    globalDbStorage.assets.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.assets.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Asset ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`Asset ${id} not found`);
+    const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
+    globalDbStorage.assets.set(id, updated);
+    return updated;
+  }
+  public async findBySpace(spaceId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.assets.values()).filter(
+      a => a.tenantId === this.tenantId && a.currentSpaceId === spaceId
+    );
+  }
+}
+
+export class InMemoryScopedAssetLocationHistoryRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.assetLocationHistories.set(item.id, item);
+    return item;
+  }
+  public async findByAsset(assetId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.assetLocationHistories.values()).filter(
+      h => h.tenantId === this.tenantId && h.assetId === assetId
+    );
+  }
+}
+
+export class InMemoryScopedAssetCustodyRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.assetCustodies.set(item.id, item);
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = globalDbStorage.assetCustodies.get(id);
+    if (!existing || existing.tenantId !== this.tenantId) {
+      throw new Error(`AssetCustody ${id} not found`);
+    }
+    const updated = { ...existing, ...data };
+    globalDbStorage.assetCustodies.set(id, updated);
+    return updated;
+  }
+  public async findActiveByAsset(assetId: UUID): Promise<any | null> {
+    return Array.from(globalDbStorage.assetCustodies.values()).find(
+      c => c.tenantId === this.tenantId && c.assetId === assetId && c.status === 'ACTIVE'
+    ) || null;
+  }
+  public async findByEmployee(employeeId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.assetCustodies.values()).filter(
+      c => c.tenantId === this.tenantId && c.employeeId === employeeId
+    );
+  }
+}
+
+export class InMemoryScopedAssetTransferRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.assetTransfers.set(item.id, item);
+    return item;
+  }
+  public async findById(id: UUID): Promise<any | null> {
+    const item = globalDbStorage.assetTransfers.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: AssetTransfer ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+  public async update(id: UUID, data: Partial<any>): Promise<any> {
+    const existing = await this.findById(id);
+    if (!existing) throw new Error(`AssetTransfer ${id} not found`);
+    const updated = { ...existing, ...data };
+    globalDbStorage.assetTransfers.set(id, updated);
+    return updated;
+  }
+  public async findActiveByAsset(assetId: UUID): Promise<any | null> {
+    return Array.from(globalDbStorage.assetTransfers.values()).find(
+      t => t.tenantId === this.tenantId && t.assetId === assetId && (t.status === 'REQUESTED' || t.status === 'APPROVED' || t.status === 'IN_TRANSIT')
+    ) || null;
+  }
+}
+
+export class InMemoryScopedAssetDocumentRepository extends ScopedRepositoryBase<any> {
+  constructor(context: RequestTenantContext) { super(context); }
+  public async create(data: any): Promise<any> {
+    const item = { ...data, tenantId: this.tenantId, createdAt: new Date().toISOString() };
+    globalDbStorage.assetDocuments.set(item.id, item);
+    return item;
+  }
+  public async findByAsset(assetId: UUID): Promise<any[]> {
+    return Array.from(globalDbStorage.assetDocuments.values()).filter(
+      d => d.tenantId === this.tenantId && d.assetId === assetId
     );
   }
 }

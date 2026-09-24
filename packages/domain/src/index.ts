@@ -28,3 +28,13 @@ export * from './hr/work-schedule.aggregate.js';
 export * from './hr/attendance.aggregate.js';
 export * from './hr/leave.aggregate.js';
 export * from './hr/personnel-document.entity.js';
+
+export * from './campus-asset/building.entity.js';
+export * from './campus-asset/floor.entity.js';
+export * from './campus-asset/space.entity.js';
+export * from './campus-asset/asset-category.entity.js';
+export * from './campus-asset/asset.aggregate.js';
+export * from './campus-asset/asset-location.entity.js';
+export * from './campus-asset/asset-custody.aggregate.js';
+export * from './campus-asset/asset-transfer.aggregate.js';
+export * from './campus-asset/asset-document.entity.js';
