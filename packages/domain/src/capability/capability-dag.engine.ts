@@ -28,7 +28,12 @@ export class CapabilityDagEngine {
     this.addRule('ATTENDANCE', ['ACADEMIC'], true);
     this.addRule('FINANCE', [], true);
     this.addRule('TRANSPORTATION', [], true);
-    this.addRule('TRANSPORT_TRACKING', ['TRANSPORTATION'], false);
+    this.addRule('TRANSPORTATION_FLEET', ['TRANSPORTATION'], true);
+    this.addRule('TRANSPORTATION_ROUTES', ['TRANSPORTATION'], true);
+    this.addRule('TRANSPORTATION_PASSENGERS', ['TRANSPORTATION_ROUTES'], true);
+    this.addRule('TRANSPORTATION_TRIPS', ['TRANSPORTATION_FLEET', 'TRANSPORTATION_ROUTES'], true);
+    this.addRule('TRANSPORTATION_HANDOVER', ['TRANSPORTATION_TRIPS', 'TRANSPORTATION_PASSENGERS'], true);
+    this.addRule('TRANSPORT_TRACKING', ['TRANSPORTATION_TRIPS'], false);
     this.addRule('CAFETERIA', [], true);
     this.addRule('GUIDANCE', ['ACADEMIC'], true);
     this.addRule('CRM', [], true);

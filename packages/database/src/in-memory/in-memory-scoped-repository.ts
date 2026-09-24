@@ -55,6 +55,22 @@ export const globalDbStorage = {
   assetTransfers: new Map<UUID, any>(),
   assetDocuments: new Map<UUID, any>(),
   assetNumberSequences: new Map<string, number>(),
+  transportationProviders: new Map<UUID, any>(),
+  transportationVehicles: new Map<UUID, any>(),
+  driverProfiles: new Map<UUID, any>(),
+  attendantProfiles: new Map<UUID, any>(),
+  transportationRoutes: new Map<UUID, any>(),
+  routeStops: new Map<UUID, any>(),
+  routeOperationalAssignments: new Map<UUID, any>(),
+  transportationPassengerProfiles: new Map<UUID, any>(),
+  passengerRouteAssignments: new Map<UUID, any>(),
+  passengerHandoverAuthorizations: new Map<UUID, any>(),
+  transportationTrips: new Map<UUID, any>(),
+  tripManifestEntries: new Map<UUID, any>(),
+  tripStopVisits: new Map<UUID, any>(),
+  passengerTripEvents: new Map<UUID, any>(),
+  passengerHandovers: new Map<UUID, any>(),
+  transportationExceptions: new Map<UUID, any>(),
   clear(): void {
     this.persons.clear();
     this.learners.clear();
@@ -100,6 +116,22 @@ export const globalDbStorage = {
     this.assetTransfers.clear();
     this.assetDocuments.clear();
     this.assetNumberSequences.clear();
+    this.transportationProviders.clear();
+    this.transportationVehicles.clear();
+    this.driverProfiles.clear();
+    this.attendantProfiles.clear();
+    this.transportationRoutes.clear();
+    this.routeStops.clear();
+    this.routeOperationalAssignments.clear();
+    this.transportationPassengerProfiles.clear();
+    this.passengerRouteAssignments.clear();
+    this.passengerHandoverAuthorizations.clear();
+    this.transportationTrips.clear();
+    this.tripManifestEntries.clear();
+    this.tripStopVisits.clear();
+    this.passengerTripEvents.clear();
+    this.passengerHandovers.clear();
+    this.transportationExceptions.clear();
   },
 };
 
@@ -733,4 +765,114 @@ export class InMemoryScopedAssetDocumentRepository extends ScopedRepositoryBase<
       d => d.tenantId === this.tenantId && d.assetId === assetId
     );
   }
+}
+
+
+export class BaseInMemoryScopedEntityRepo<T extends { id: UUID; tenantId: UUID }> extends ScopedRepositoryBase<T> {
+  constructor(context: RequestTenantContext, protected storageMap: Map<UUID, T>) {
+    super(context);
+  }
+
+  public async create(data: T): Promise<T> {
+    const item = {
+      ...data,
+      tenantId: this.tenantId,
+      createdAt: (data as any).createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.storageMap.set(item.id, item);
+    return item;
+  }
+
+  public async findById(id: UUID): Promise<T | null> {
+    const item = this.storageMap.get(id);
+    if (!item) return null;
+    if (item.tenantId !== this.tenantId) {
+      throw new CrossTenantViolationError(`Cross-tenant violation: Entity ${id} belongs to different tenant.`);
+    }
+    return item;
+  }
+
+  public async findAll(): Promise<T[]> {
+    return Array.from(this.storageMap.values()).filter(x => x.tenantId === this.tenantId);
+  }
+
+  public async update(id: UUID, data: Partial<T>): Promise<T> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      throw new Error(`Entity ${id} not found to update.`);
+    }
+    const updated = {
+      ...existing,
+      ...data,
+      tenantId: this.tenantId,
+      updatedAt: new Date().toISOString(),
+    };
+    this.storageMap.set(id, updated);
+    return updated;
+  }
+}
+
+export class InMemoryScopedTransportationProviderRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationProviders); }
+}
+
+export class InMemoryScopedTransportationVehicleRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationVehicles); }
+}
+
+export class InMemoryScopedDriverProfileRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.driverProfiles); }
+}
+
+export class InMemoryScopedAttendantProfileRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.attendantProfiles); }
+}
+
+export class InMemoryScopedTransportationRouteRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationRoutes); }
+}
+
+export class InMemoryScopedRouteStopRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.routeStops); }
+}
+
+export class InMemoryScopedRouteOperationalAssignmentRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.routeOperationalAssignments); }
+}
+
+export class InMemoryScopedTransportationPassengerProfileRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationPassengerProfiles); }
+}
+
+export class InMemoryScopedPassengerRouteAssignmentRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.passengerRouteAssignments); }
+}
+
+export class InMemoryScopedPassengerHandoverAuthorizationRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.passengerHandoverAuthorizations); }
+}
+
+export class InMemoryScopedTransportationTripRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationTrips); }
+}
+
+export class InMemoryScopedTripManifestEntryRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.tripManifestEntries); }
+}
+
+export class InMemoryScopedTripStopVisitRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.tripStopVisits); }
+}
+
+export class InMemoryScopedPassengerTripEventRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.passengerTripEvents); }
+}
+
+export class InMemoryScopedPassengerHandoverRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.passengerHandovers); }
+}
+
+export class InMemoryScopedTransportationExceptionRepository extends BaseInMemoryScopedEntityRepo<any> {
+  constructor(context: RequestTenantContext) { super(context, globalDbStorage.transportationExceptions); }
 }

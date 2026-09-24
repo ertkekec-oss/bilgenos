@@ -19,3 +19,6 @@ export * from './events/phase4.events.js';
 
 export * from './api/campus-asset.dto.js';
 export * from './events/phase5.events.js';
+
+export * from './api/transportation.dto.js';
+export * from './events/phase6.events.js';

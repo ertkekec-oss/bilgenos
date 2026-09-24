@@ -36,7 +36,11 @@ type ActiveTab =
   | 'PHYSICAL_SPACES'
   | 'ASSETS'
   | 'ASSET_CUSTODY'
-  | 'ASSET_TRANSFERS';
+  | 'ASSET_TRANSFERS'
+  | 'TRANSPORT_ROUTES'
+  | 'TRANSPORT_FLEET'
+  | 'TRANSPORT_PASSENGERS'
+  | 'TRANSPORT_TRIPS';
 
 export function CoreAdministrationWorkbench(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<ActiveTab>('CAPABILITIES');
@@ -702,6 +706,10 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
     { id: 'ASSETS', label: '20. Demirbaş & Varlık Yönetimi' },
     { id: 'ASSET_CUSTODY', label: '21. Zimmet & Sorumluluk' },
     { id: 'ASSET_TRANSFERS', label: '22. Varlık Transferleri' },
+    { id: 'TRANSPORT_ROUTES', label: '23. Servis Güzergah & Duraklar' },
+    { id: 'TRANSPORT_FLEET', label: '24. Araç Filosu & Sürücüler' },
+    { id: 'TRANSPORT_PASSENGERS', label: '25. Servis Yolcu Listesi & Zimmet' },
+    { id: 'TRANSPORT_TRIPS', label: '26. Canlı Sefer Takibi & Güvenli Teslimat' },
   ];
 
   return (
@@ -1655,6 +1663,336 @@ export function CoreAdministrationWorkbench(): React.ReactElement {
                   { key: 'status', header: 'Durum', width: '110px', render: (row: any) => <StatusBadge label={row.status} variant={row.status === 'COMPLETED' ? 'success' : 'warning'} /> },
                   { key: 'requestedAt', header: 'Talep Tarihi', width: '130px' },
                   { key: 'reason', header: 'Transfer Gerekçesi' },
+                ]}
+              />
+            </div>
+          )}
+
+
+          {activeTab === 'TRANSPORT_ROUTES' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Servis Güzergahları & Durak Konfigürasyonu (Transportation Routes & Stops)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Güzergah tekrar kullanılabilir plan şablonudur (Route ≠ Trip). En az 2 durak olmadan aktive edilemez (TRN-009, TRN-010).
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; code: string; name: string; type: string; stopsCount: number; duration: string; distance: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'rt-1',
+                    code: 'GZ-01-KADIKOY',
+                    name: 'Kadıköy - Ataşehir - Kampüs Sabah Ringi',
+                    type: 'MORNING_PICKUP',
+                    stopsCount: 4,
+                    duration: '45 dk',
+                    distance: '18.4 km',
+                    status: 'ACTIVE',
+                  },
+                  {
+                    id: 'rt-2',
+                    code: 'GZ-02-USKUDAR',
+                    name: 'Üsküdar - Çamlıca - Kampüs Sabah Ringi',
+                    type: 'MORNING_PICKUP',
+                    stopsCount: 3,
+                    duration: '35 dk',
+                    distance: '14.2 km',
+                    status: 'ACTIVE',
+                  },
+                  {
+                    id: 'rt-3',
+                    code: 'GZ-01-AKSAM',
+                    name: 'Kampüs - Ataşehir - Kadıköy Akşam Dağıtım',
+                    type: 'EVENING_DROPOFF',
+                    stopsCount: 4,
+                    duration: '50 dk',
+                    distance: '19.1 km',
+                    status: 'ACTIVE',
+                  },
+                ]}
+                columns={[
+                  { key: 'code', header: 'Güzergah Kodu', width: '150px', render: (row) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.code}</strong> },
+                  { key: 'name', header: 'Güzergah Tanımı', width: '280px' },
+                  { key: 'type', header: 'Servis Tipi', width: '160px', render: (row) => <StatusBadge label={row.type} variant="info" /> },
+                  { key: 'stopsCount', header: 'Durak Sayısı', width: '110px', isNumeric: true },
+                  { key: 'duration', header: 'Planlanan Süre', width: '120px', isNumeric: true },
+                  { key: 'distance', header: 'Mesafe', width: '110px', isNumeric: true },
+                  { key: 'status', header: 'Durum', width: '100px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+
+              <div style={{ marginTop: '24px', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '13px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  GZ-01-KADIKOY Güzergahı Durak Sıralaması (Planned Sequence)
+                </h3>
+              </div>
+              <ExcelTable<{ id: string; seq: number; name: string; plannedTime: string; type: string; coords: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  { id: 'st-1', seq: 1, name: 'Kadıköy Rıhtım İskele Önü', plannedTime: '07:15', type: 'PICKUP', coords: '40.9904, 29.0254' },
+                  { id: 'st-2', seq: 2, name: 'Ataşehir Doğu Kapısı Kavşağı', plannedTime: '07:30', type: 'PICKUP', coords: '40.9921, 29.1174' },
+                  { id: 'st-3', seq: 3, name: 'Barbaros Mah. Halk Caddesi', plannedTime: '07:42', type: 'PICKUP', coords: '40.9950, 29.1020' },
+                  { id: 'st-4', seq: 4, name: 'Bilgen Koleji Ana Kampüs Girişi', plannedTime: '08:00', type: 'CAMPUS_DESTINATION', coords: '41.0112, 29.1245' },
+                ]}
+                columns={[
+                  { key: 'seq', header: 'Sıra', width: '70px', isNumeric: true },
+                  { key: 'name', header: 'Durak Adı / Konum', width: '280px' },
+                  { key: 'plannedTime', header: 'Hedef Saat', width: '110px', isNumeric: true },
+                  { key: 'type', header: 'Durak Türü', width: '160px', render: (row) => <StatusBadge label={row.type} variant={row.type === 'CAMPUS_DESTINATION' ? 'success' : 'default'} /> },
+                  { key: 'coords', header: 'Koordinat (WGS84)', width: '180px', isNumeric: true },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'TRANSPORT_FLEET' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Araç Filosu, Operasyonel Kapasite & Sürücüler (Fleet & Crew)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Araç fiziki varlıkla (Asset) bağlanabilir veya taşeron taşıyıcıya ait olabilir (TRN-004, TRN-005). Kapasite aşımı kesinlikle engellenir (TRN-016).
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; plate: string; type: string; capacity: number; effectiveCap: number; ownership: string; inspection: string; insurance: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'vh-1',
+                    plate: '34 BLG 101',
+                    type: 'MIDIBUS (27 Kişilik)',
+                    capacity: 27,
+                    effectiveCap: 26,
+                    ownership: 'Özmal (Asset Ref: AST-VEH-001)',
+                    inspection: '2027-04-15',
+                    insurance: '2027-02-10',
+                    status: 'ACTIVE',
+                  },
+                  {
+                    id: 'vh-2',
+                    plate: '34 TRN 882',
+                    type: 'MINIBUS (16 Kişilik)',
+                    capacity: 16,
+                    effectiveCap: 15,
+                    ownership: 'Özlem Taşımacılık A.Ş.',
+                    inspection: '2026-11-20',
+                    insurance: '2026-10-30',
+                    status: 'ACTIVE',
+                  },
+                ]}
+                columns={[
+                  { key: 'plate', header: 'Plaka', width: '140px', render: (row) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.plate}</strong> },
+                  { key: 'type', header: 'Araç Türü', width: '180px' },
+                  { key: 'capacity', header: 'Koltuk', width: '90px', isNumeric: true },
+                  { key: 'effectiveCap', header: 'Efektif Kapasite', width: '130px', isNumeric: true },
+                  { key: 'ownership', header: 'Mülkiyet / Sağlayıcı', width: '240px' },
+                  { key: 'inspection', header: 'Muayene Geçerlilik', width: '140px', isNumeric: true },
+                  { key: 'insurance', header: 'Sigorta Geçerlilik', width: '140px', isNumeric: true },
+                  { key: 'status', header: 'Durum', width: '100px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+
+              <div style={{ marginTop: '24px', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '13px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Yetkili Sürücü & Rehber Personel Sicilleri (Driver & Attendant Profiles)
+                </h3>
+              </div>
+              <ExcelTable<{ id: string; name: string; role: string; type: string; license: string; psychotechnical: string; criminalChecked: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'dr-1',
+                    name: 'Ahmet Yılmaz',
+                    role: 'Sürücü',
+                    type: 'INTERNAL (Kurum Personeli)',
+                    license: 'D Sınıfı (34-99812)',
+                    psychotechnical: '2027-08-01',
+                    criminalChecked: 'Adli Sicil Temiz (2026-09-01)',
+                    status: 'ACTIVE',
+                  },
+                  {
+                    id: 'dr-2',
+                    name: 'Mehmet Demir',
+                    role: 'Sürücü',
+                    type: 'CONTRACTED (Özlem Taşımacılık)',
+                    license: 'D Sınıfı (34-11204)',
+                    psychotechnical: '2027-01-15',
+                    criminalChecked: 'Adli Sicil Temiz (2026-08-20)',
+                    status: 'ACTIVE',
+                  },
+                  {
+                    id: 'at-1',
+                    name: 'Ayşe Kaya',
+                    role: 'Rehber Personel',
+                    type: 'INTERNAL (Kurum Personeli)',
+                    license: 'İlk Yardım Sertifikalı',
+                    psychotechnical: 'Muaf',
+                    criminalChecked: 'Adli Sicil Temiz (2026-09-01)',
+                    status: 'ACTIVE',
+                  },
+                ]}
+                columns={[
+                  { key: 'name', header: 'Ad Soyad', width: '180px' },
+                  { key: 'role', header: 'Görev', width: '130px', render: (row) => <StatusBadge label={row.role} variant={row.role === 'Sürücü' ? 'info' : 'default'} /> },
+                  { key: 'type', header: 'İstihdam Türü', width: '220px' },
+                  { key: 'license', header: 'Ehliyet / Sertifika', width: '180px' },
+                  { key: 'psychotechnical', header: 'Psikoteknik', width: '120px', isNumeric: true },
+                  { key: 'criminalChecked', header: 'Güvenlik Taraması', width: '210px' },
+                  { key: 'status', header: 'Durum', width: '100px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'TRANSPORT_PASSENGERS' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Servis Yolcu Listesi & Güvenli Teslimat Yetkilileri (Passenger Manifest & Handover)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Yolcu kaydı BilgenOkul akademik masterını kopyalamaz (TRN-002, TRN-003). Veli teslim şartı olan öğrenciler yetkili kişi olmadan teslim edilemez (TRN-024).
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; studentNo: string; name: string; route: string; stop: string; direction: string; requiresHandover: string; emergencyContact: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'pass-1',
+                    studentNo: 'STU-2026-0042',
+                    name: 'Kerem Bilgen',
+                    route: 'GZ-01-KADIKOY',
+                    stop: 'Ataşehir Doğu Kapısı',
+                    direction: 'SABAH & AKSAM',
+                    requiresHandover: 'ZORUNLU (1. Kademe)',
+                    emergencyContact: 'Fatma Bilgen (+90 555 222 3344)',
+                  },
+                  {
+                    id: 'pass-2',
+                    studentNo: 'STU-2026-0089',
+                    name: 'Zeynep Kaya',
+                    route: 'GZ-01-KADIKOY',
+                    stop: 'Kadıköy Rıhtım İskele',
+                    direction: 'SABAH & AKSAM',
+                    requiresHandover: 'ZORUNLU (1. Kademe)',
+                    emergencyContact: 'Murat Kaya (+90 555 444 5566)',
+                  },
+                ]}
+                columns={[
+                  { key: 'studentNo', header: 'Öğrenci No', width: '140px', render: (row) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.studentNo}</strong> },
+                  { key: 'name', header: 'Öğrenci Adı Soyadı', width: '180px' },
+                  { key: 'route', header: 'Atanan Güzergah', width: '160px' },
+                  { key: 'stop', header: 'Biniş / İniş Durağı', width: '200px' },
+                  { key: 'direction', header: 'Yön', width: '140px' },
+                  { key: 'requiresHandover', header: 'Veli Teslim Şartı', width: '170px', render: (row) => <StatusBadge label={row.requiresHandover} variant="warning" /> },
+                  { key: 'emergencyContact', header: 'Acil Durum İletişim', width: '240px' },
+                ]}
+              />
+
+              <div style={{ marginTop: '24px', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '13px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Kerem Bilgen — Yetkili Teslim Alma İzinleri (Handover Authorizations)
+                </h3>
+              </div>
+              <ExcelTable<{ id: string; person: string; rel: string; scope: string; validDates: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  { id: 'ha-1', person: 'Fatma Bilgen', rel: 'ANNE (Yasal Veli)', scope: 'REGULAR', validDates: '2026-09-01 — 2027-06-30', status: 'ACTIVE' },
+                  { id: 'ha-2', person: 'Ali Bilgen', rel: 'BABA (Yasal Veli)', scope: 'REGULAR', validDates: '2026-09-01 — 2027-06-30', status: 'ACTIVE' },
+                  { id: 'ha-3', person: 'Mehmet Özkan', rel: 'DAYI (Geçici Yetkili)', scope: 'TEMPORARY_DELEGATE', validDates: '2026-09-25 — 2026-09-26', status: 'ACTIVE' },
+                ]}
+                columns={[
+                  { key: 'person', header: 'Teslim Almaya Yetkili Kişi', width: '220px' },
+                  { key: 'rel', header: 'Yakınlık / Yetki Kapsamı', width: '200px' },
+                  { key: 'scope', header: 'Kapsam Türü', width: '150px' },
+                  { key: 'validDates', header: 'Geçerlilik Tarihleri', width: '210px', isNumeric: true },
+                  { key: 'status', header: 'Yetki Durumu', width: '120px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+            </div>
+          )}
+
+          {activeTab === 'TRANSPORT_TRIPS' && (
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '15px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Günlük Canlı Sefer Takibi, Biniş/İniş & Güvenli Teslimat (Daily Trips & Live Safe Handover)
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: BILGEN_TOKENS.colors.textSecondary }}>
+                  Sefer başlatıldığında yolcu ve durak listesi dondurulur (TRN-019). Araçta yolcu varken sefer tamamlanamaz (TRN-033).
+                </p>
+              </div>
+
+              <ExcelTable<{ id: string; tripCode: string; date: string; shift: string; vehicle: string; driver: string; expected: number; boarded: number; dropped: number; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'tr-1',
+                    tripCode: 'TRIP-20260925-GZ01-M',
+                    date: '2026-09-25',
+                    shift: 'MORNING_PICKUP',
+                    vehicle: '34 BLG 101',
+                    driver: 'Ahmet Yılmaz',
+                    expected: 2,
+                    boarded: 2,
+                    dropped: 2,
+                    status: 'COMPLETED',
+                  },
+                ]}
+                columns={[
+                  { key: 'tripCode', header: 'Sefer Kodu', width: '200px', render: (row) => <strong style={{ fontFamily: BILGEN_TOKENS.typography.fontFamilyMono }}>{row.tripCode}</strong> },
+                  { key: 'date', header: 'Tarih', width: '110px', isNumeric: true },
+                  { key: 'shift', header: 'Vardiya', width: '150px' },
+                  { key: 'vehicle', header: 'Araç', width: '130px' },
+                  { key: 'driver', header: 'Sürücü', width: '160px' },
+                  { key: 'expected', header: 'Beklenen', width: '90px', isNumeric: true },
+                  { key: 'boarded', header: 'Binen', width: '90px', isNumeric: true },
+                  { key: 'dropped', header: 'İnen', width: '90px', isNumeric: true },
+                  { key: 'status', header: 'Sefer Durumu', width: '120px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
+                ]}
+              />
+
+              <div style={{ marginTop: '24px', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '13px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                  Yolcu Biniş, İniş & Güvenli Teslimat Denetim Günlüğü (Safe Handover Audit)
+                </h3>
+              </div>
+              <ExcelTable<{ id: string; student: string; boardedAt: string; droppedAt: string; handoverTo: string; method: string; status: string }>
+                keyExtractor={(row) => row.id}
+                data={[
+                  {
+                    id: 'ev-1',
+                    student: 'Kerem Bilgen (STU-2026-0042)',
+                    boardedAt: '07:31:05 (Ataşehir)',
+                    droppedAt: '08:02:14 (Kampüs Giriş)',
+                    handoverTo: 'Nöbetçi Öğretmen / Fatma Bilgen',
+                    method: 'VERIFICATION_PIN (Doğrulandı)',
+                    status: 'DELIVERED_SAFE',
+                  },
+                  {
+                    id: 'ev-2',
+                    student: 'Zeynep Kaya (STU-2026-0089)',
+                    boardedAt: '07:16:22 (Kadıköy)',
+                    droppedAt: '08:02:18 (Kampüs Giriş)',
+                    handoverTo: 'Nöbetçi Öğretmen / Murat Kaya',
+                    method: 'PHYSICAL_SIGNATURE (Doğrulandı)',
+                    status: 'DELIVERED_SAFE',
+                  },
+                ]}
+                columns={[
+                  { key: 'student', header: 'Öğrenci', width: '220px' },
+                  { key: 'boardedAt', header: 'Biniş Zamanı & Durak', width: '180px', isNumeric: true },
+                  { key: 'droppedAt', header: 'İniş Zamanı & Durak', width: '180px', isNumeric: true },
+                  { key: 'handoverTo', header: 'Teslim Edilen Yetkili', width: '220px' },
+                  { key: 'method', header: 'Doğrulama Metodu', width: '220px' },
+                  { key: 'status', header: 'Teslimat Güvenliği', width: '140px', render: (row) => <StatusBadge label={row.status} variant="success" /> },
                 ]}
               />
             </div>

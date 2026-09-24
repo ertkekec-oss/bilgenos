@@ -22,6 +22,11 @@ export type CapabilityKey =
   | 'ASSET_MANAGEMENT'
   | 'ASSET_CUSTODY'
   | 'ASSET_TRANSFER'
+  | 'TRANSPORTATION_ROUTES'
+  | 'TRANSPORTATION_FLEET'
+  | 'TRANSPORTATION_PASSENGERS'
+  | 'TRANSPORTATION_TRIPS'
+  | 'TRANSPORTATION_HANDOVER'
   | 'AI';
 
 export interface InstitutionCapabilityDto extends BaseEntityDto {

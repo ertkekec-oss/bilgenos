@@ -7,3 +7,4 @@ export * from './services/phase2.services.js';
 export * from './services/phase3.services.js';
 export * from './services/phase4.services.js';
 export * from './services/phase5.services.js';
+export * from './services/phase6.services.js';

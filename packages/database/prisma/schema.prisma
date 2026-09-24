@@ -20,19 +20,26 @@ model Tenant {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  organizations         Organization[]
-  persons               Person[]
-  users                 User[]
-  learners              Learner[]
-  guardianRelationships GuardianRelationship[]
-  employeeProfiles      EmployeeProfile[]
-  buildings             Building[]
-  floors                Floor[]
-  spaces                Space[]
-  assetCategories       AssetCategory[]
-  assets                Asset[]
-  enrollments           Enrollment[]
-  auditLogs             AuditLog[]
+  organizations           Organization[]
+  persons                 Person[]
+  users                   User[]
+  learners                Learner[]
+  guardianRelationships   GuardianRelationship[]
+  employeeProfiles        EmployeeProfile[]
+  buildings               Building[]
+  floors                  Floor[]
+  spaces                  Space[]
+  assetCategories         AssetCategory[]
+  assets                  Asset[]
+  transportationProviders TransportationProvider[]
+  transportationVehicles  TransportationVehicle[]
+  driverProfiles          DriverProfile[]
+  attendantProfiles       AttendantProfile[]
+  transportationRoutes    TransportationRoute[]
+  passengerProfiles       TransportationPassengerProfile[]
+  transportationTrips     TransportationTrip[]
+  enrollments             Enrollment[]
+  auditLogs               AuditLog[]
 
   @@map("tenants")
 }
@@ -65,20 +72,23 @@ model Institution {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  organization     Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  capabilities     InstitutionCapability[]
-  campuses         Campus[]
-  educationPeriods EducationPeriod[]
-  programs         EducationProgram[]
-  learners         Learner[]
-  enrollments      Enrollment[]
-  departments      Department[]
-  positions        Position[]
-  assignments      InstitutionAssignment[]
-  workSchedules    WorkSchedule[]
-  attendanceEvents AttendanceEvent[]
-  employeeLeaves   EmployeeLeave[]
-  buildings        Building[]
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  capabilities           InstitutionCapability[]
+  campuses               Campus[]
+  educationPeriods       EducationPeriod[]
+  programs               EducationProgram[]
+  learners               Learner[]
+  enrollments            Enrollment[]
+  departments            Department[]
+  positions              Position[]
+  assignments            InstitutionAssignment[]
+  workSchedules          WorkSchedule[]
+  attendanceEvents       AttendanceEvent[]
+  employeeLeaves         EmployeeLeave[]
+  buildings              Building[]
+  transportationVehicles TransportationVehicle[]
+  transportationRoutes   TransportationRoute[]
+  transportationTrips    TransportationTrip[]
 
   @@index([organizationId])
   @@map("institutions")
@@ -110,11 +120,14 @@ model Campus {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  institution Institution             @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  cohorts     EducationCohort[]
-  enrollments Enrollment[]
-  assignments InstitutionAssignment[]
-  buildings   Building[]
+  institution            Institution             @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  cohorts                EducationCohort[]
+  enrollments            Enrollment[]
+  assignments            InstitutionAssignment[]
+  buildings              Building[]
+  transportationVehicles TransportationVehicle[]
+  transportationRoutes   TransportationRoute[]
+  transportationTrips    TransportationTrip[]
 
   @@index([institutionId])
   @@map("campuses")
@@ -137,11 +150,16 @@ model Person {
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  users                 User[]
-  learners              Learner[]
-  guardianRelationships GuardianRelationship[]
-  employeeProfiles      EmployeeProfile[]
+  tenant                          Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users                           User[]
+  learners                        Learner[]
+  guardianRelationships           GuardianRelationship[]
+  employeeProfiles                EmployeeProfile[]
+  driverProfiles                  DriverProfile[]
+  attendantProfiles               AttendantProfile[]
+  transportationPassengerProfiles TransportationPassengerProfile[]
+  handoverAuthorizations          PassengerHandoverAuthorization[]
+  receivedHandovers               PassengerHandover[]
 
   @@index([tenantId])
   @@map("persons")
@@ -199,12 +217,13 @@ model Learner {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant                Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  person                Person                  @relation(fields: [personId], references: [id], onDelete: Restrict)
-  institution           Institution             @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  tenant                Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person                Person                           @relation(fields: [personId], references: [id], onDelete: Restrict)
+  institution           Institution                      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
   guardianRelationships GuardianRelationship[]
   enrollments           Enrollment[]
   examPrepProfile       LearnerExamPrepProfile?
+  passengerProfiles     TransportationPassengerProfile[]
 
   @@unique([institutionId, learnerNumber])
   @@index([tenantId])
@@ -1023,16 +1042,19 @@ model EmployeeProfile {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  person         Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
-  employments    Employment[]
-  assignments    InstitutionAssignment[]
-  schedules      EmployeeScheduleAssignment[]
-  events         AttendanceEvent[]
-  sessions       AttendanceSession[]
-  leaves         EmployeeLeave[]
-  documents      PersonnelDocument[]
-  assetCustodies AssetCustody[]
-  tenant         Tenant                       @relation(fields: [tenantId], references: [id])
+  person            Person                           @relation(fields: [personId], references: [id], onDelete: Restrict)
+  employments       Employment[]
+  assignments       InstitutionAssignment[]
+  schedules         EmployeeScheduleAssignment[]
+  events            AttendanceEvent[]
+  sessions          AttendanceSession[]
+  leaves            EmployeeLeave[]
+  documents         PersonnelDocument[]
+  assetCustodies    AssetCustody[]
+  driverProfiles    DriverProfile[]
+  attendantProfiles AttendantProfile[]
+  passengerProfiles TransportationPassengerProfile[]
+  tenant            Tenant                           @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, employeeNumber], map: "uq_employees_tenant_number")
   @@index([tenantId])
@@ -1405,14 +1427,15 @@ model Asset {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  organization      Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  category          AssetCategory          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  currentSpace      Space?                 @relation(fields: [currentSpaceId], references: [id], onDelete: SetNull)
-  locationHistories AssetLocationHistory[]
-  custodies         AssetCustody[]
-  transfers         AssetTransfer[]
-  documents         AssetDocument[]
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category               AssetCategory           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  currentSpace           Space?                  @relation(fields: [currentSpaceId], references: [id], onDelete: SetNull)
+  locationHistories      AssetLocationHistory[]
+  custodies              AssetCustody[]
+  transfers              AssetTransfer[]
+  documents              AssetDocument[]
+  transportationVehicles TransportationVehicle[]
 
   @@unique([tenantId, assetNumber], map: "uq_assets_tenant_number")
   @@index([tenantId])
@@ -1525,4 +1548,477 @@ model AssetNumberSequence {
 
   @@unique([tenantId, scopeKey], map: "uq_asset_seq_tenant_scope")
   @@map("asset_number_sequences")
+}
+
+// ----------------------------------------------------
+// 12. PHASE 6: TRANSPORTATION OPERATIONS CORE
+// ----------------------------------------------------
+
+model TransportationProvider {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  name           String   @db.VarChar(255)
+  code           String   @db.VarChar(50)
+  taxNumber      String?  @map("tax_number") @db.VarChar(50)
+  contactName    String?  @map("contact_name") @db.VarChar(100)
+  phone          String?  @db.VarChar(50)
+  email          String?  @db.VarChar(100)
+  status         String   @default("ACTIVE") @db.VarChar(50)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant            Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicles          TransportationVehicle[]
+  driverProfiles    DriverProfile[]
+  attendantProfiles AttendantProfile[]
+
+  @@unique([tenantId, code], map: "uq_trans_provider_tenant_code")
+  @@index([tenantId])
+  @@index([organizationId])
+  @@map("transportation_providers")
+}
+
+model TransportationVehicle {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  institutionId        String    @map("institution_id") @db.Uuid
+  campusId             String    @map("campus_id") @db.Uuid
+  providerId           String?   @map("provider_id") @db.Uuid
+  assetId              String?   @map("asset_id") @db.Uuid
+  plateNumber          String    @map("plate_number") @db.VarChar(50)
+  plateNormalized      String    @map("plate_normalized") @db.VarChar(50)
+  vehicleType          String    @map("vehicle_type") @db.VarChar(50)
+  make                 String?   @db.VarChar(100)
+  model                String?   @db.VarChar(100)
+  modelYear            Int?      @map("model_year")
+  seatingCapacity      Int       @map("seating_capacity")
+  effectiveCapacity    Int       @map("effective_capacity")
+  status               String    @default("ACTIVE") @db.VarChar(50)
+  inspectionExpiryDate DateTime? @map("inspection_expiry_date") @db.Date
+  insuranceExpiryDate  DateTime? @map("insurance_expiry_date") @db.Date
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant      Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  institution Institution                  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  campus      Campus                       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  provider    TransportationProvider?      @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  asset       Asset?                       @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  assignments RouteOperationalAssignment[]
+  trips       TransportationTrip[]
+  exceptions  TransportationException[]
+
+  @@unique([tenantId, plateNormalized], map: "uq_trans_vehicle_tenant_plate")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([campusId])
+  @@index([providerId])
+  @@index([assetId])
+  @@index([status])
+  @@map("transportation_vehicles")
+}
+
+model DriverProfile {
+  id                        String    @id @default(uuid()) @db.Uuid
+  tenantId                  String    @map("tenant_id") @db.Uuid
+  personId                  String    @map("person_id") @db.Uuid
+  providerId                String?   @map("provider_id") @db.Uuid
+  employeeProfileId         String?   @map("employee_profile_id") @db.Uuid
+  driverType                String    @map("driver_type") @db.VarChar(50)
+  licenseNumber             String    @map("license_number") @db.VarChar(100)
+  licenseClasses            String[]  @map("license_classes")
+  licenseExpiryDate         DateTime  @map("license_expiry_date") @db.Date
+  srcCertificateExpiryDate  DateTime? @map("src_certificate_expiry_date") @db.Date
+  psychotechnicalExpiryDate DateTime? @map("psychotechnical_expiry_date") @db.Date
+  criminalRecordCheckedAt   DateTime? @map("criminal_record_checked_at") @db.Date
+  status                    String    @default("ACTIVE") @db.VarChar(50)
+  createdAt                 DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                 DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant          Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person          Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
+  provider        TransportationProvider?      @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  employeeProfile EmployeeProfile?             @relation(fields: [employeeProfileId], references: [id], onDelete: SetNull)
+  assignments     RouteOperationalAssignment[]
+  trips           TransportationTrip[]
+  exceptions      TransportationException[]
+
+  @@unique([tenantId, licenseNumber], map: "uq_driver_tenant_license")
+  @@index([tenantId])
+  @@index([personId])
+  @@index([providerId])
+  @@index([employeeProfileId])
+  @@index([status])
+  @@map("driver_profiles")
+}
+
+model AttendantProfile {
+  id                      String    @id @default(uuid()) @db.Uuid
+  tenantId                String    @map("tenant_id") @db.Uuid
+  personId                String    @map("person_id") @db.Uuid
+  providerId              String?   @map("provider_id") @db.Uuid
+  employeeProfileId       String?   @map("employee_profile_id") @db.Uuid
+  attendantType           String    @map("attendant_type") @db.VarChar(50)
+  firstAidCertified       Boolean   @default(false) @map("first_aid_certified")
+  firstAidExpiryDate      DateTime? @map("first_aid_expiry_date") @db.Date
+  criminalRecordCheckedAt DateTime? @map("criminal_record_checked_at") @db.Date
+  status                  String    @default("ACTIVE") @db.VarChar(50)
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant          Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person          Person                       @relation(fields: [personId], references: [id], onDelete: Restrict)
+  provider        TransportationProvider?      @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  employeeProfile EmployeeProfile?             @relation(fields: [employeeProfileId], references: [id], onDelete: SetNull)
+  assignments     RouteOperationalAssignment[]
+  trips           TransportationTrip[]
+
+  @@index([tenantId])
+  @@index([personId])
+  @@index([providerId])
+  @@index([employeeProfileId])
+  @@index([status])
+  @@map("attendant_profiles")
+}
+
+model TransportationRoute {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  institutionId            String    @map("institution_id") @db.Uuid
+  campusId                 String    @map("campus_id") @db.Uuid
+  code                     String    @db.VarChar(50)
+  name                     String    @db.VarChar(255)
+  routeType                String    @map("route_type") @db.VarChar(50)
+  status                   String    @default("DRAFT") @db.VarChar(50)
+  effectiveFrom            DateTime  @map("effective_from") @db.Date
+  effectiveUntil           DateTime? @map("effective_until") @db.Date
+  estimatedDurationMinutes Int?      @map("estimated_duration_minutes")
+  estimatedDistanceKm      Decimal?  @map("estimated_distance_km") @db.Decimal(8, 2)
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant               Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  institution          Institution                  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  campus               Campus                       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  stops                RouteStop[]
+  assignments          RouteOperationalAssignment[]
+  passengerAssignments PassengerRouteAssignment[]
+  trips                TransportationTrip[]
+
+  @@unique([tenantId, campusId, code], map: "uq_route_tenant_campus_code")
+  @@index([tenantId])
+  @@index([institutionId])
+  @@index([campusId])
+  @@index([status])
+  @@map("transportation_routes")
+}
+
+model RouteStop {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  routeId        String   @map("route_id") @db.Uuid
+  sequenceNumber Int      @map("sequence_number")
+  name           String   @db.VarChar(255)
+  address        String?  @db.Text
+  latitude       Decimal? @db.Decimal(10, 7)
+  longitude      Decimal? @db.Decimal(10, 7)
+  plannedTime    String?  @map("planned_time") @db.VarChar(10)
+  stopType       String   @map("stop_type") @db.VarChar(50)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  route                TransportationRoute        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  passengerAssignments PassengerRouteAssignment[]
+  stopVisits           TripStopVisit[]
+
+  @@unique([routeId, sequenceNumber], map: "uq_route_stop_seq")
+  @@index([tenantId])
+  @@index([routeId])
+  @@map("route_stops")
+}
+
+model RouteOperationalAssignment {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  routeId            String    @map("route_id") @db.Uuid
+  vehicleId          String    @map("vehicle_id") @db.Uuid
+  driverProfileId    String    @map("driver_profile_id") @db.Uuid
+  attendantProfileId String?   @map("attendant_profile_id") @db.Uuid
+  effectiveFrom      DateTime  @map("effective_from") @db.Date
+  effectiveUntil     DateTime? @map("effective_until") @db.Date
+  dayOfWeekMask      Int[]     @map("day_of_week_mask")
+  status             String    @default("ACTIVE") @db.VarChar(50)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  route            TransportationRoute   @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  vehicle          TransportationVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverProfile    DriverProfile         @relation(fields: [driverProfileId], references: [id], onDelete: Cascade)
+  attendantProfile AttendantProfile?     @relation(fields: [attendantProfileId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([routeId])
+  @@index([vehicleId])
+  @@index([driverProfileId])
+  @@index([status])
+  @@map("route_operational_assignments")
+}
+
+model TransportationPassengerProfile {
+  id                    String   @id @default(uuid()) @db.Uuid
+  tenantId              String   @map("tenant_id") @db.Uuid
+  personId              String   @map("person_id") @db.Uuid
+  learnerId             String?  @map("learner_id") @db.Uuid
+  employeeProfileId     String?  @map("employee_profile_id") @db.Uuid
+  passengerType         String   @map("passenger_type") @db.VarChar(50)
+  requiresHandover      Boolean  @default(false) @map("requires_handover")
+  mobilityNotes         String?  @map("mobility_notes") @db.Text
+  emergencyContactName  String   @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone String   @map("emergency_contact_phone") @db.VarChar(50)
+  status                String   @default("ACTIVE") @db.VarChar(50)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                 Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  person                 Person                           @relation(fields: [personId], references: [id], onDelete: Restrict)
+  learner                Learner?                         @relation(fields: [learnerId], references: [id], onDelete: SetNull)
+  employeeProfile        EmployeeProfile?                 @relation(fields: [employeeProfileId], references: [id], onDelete: SetNull)
+  routeAssignments       PassengerRouteAssignment[]
+  handoverAuthorizations PassengerHandoverAuthorization[]
+  manifestEntries        TripManifestEntry[]
+  tripEvents             PassengerTripEvent[]
+  handovers              PassengerHandover[]
+  exceptions             TransportationException[]
+
+  @@unique([tenantId, personId], map: "uq_trans_pass_tenant_person")
+  @@index([tenantId])
+  @@index([personId])
+  @@index([learnerId])
+  @@index([status])
+  @@map("transportation_passenger_profiles")
+}
+
+model PassengerRouteAssignment {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  passengerProfileId String    @map("passenger_profile_id") @db.Uuid
+  routeId            String    @map("route_id") @db.Uuid
+  stopId             String    @map("stop_id") @db.Uuid
+  direction          String    @db.VarChar(50)
+  effectiveFrom      DateTime  @map("effective_from") @db.Date
+  effectiveUntil     DateTime? @map("effective_until") @db.Date
+  status             String    @default("ACTIVE") @db.VarChar(50)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  passengerProfile TransportationPassengerProfile @relation(fields: [passengerProfileId], references: [id], onDelete: Cascade)
+  route            TransportationRoute            @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stop             RouteStop                      @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([passengerProfileId])
+  @@index([routeId])
+  @@index([stopId])
+  @@index([status])
+  @@map("passenger_route_assignments")
+}
+
+model PassengerHandoverAuthorization {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  passengerProfileId   String    @map("passenger_profile_id") @db.Uuid
+  authorizedPersonId   String    @map("authorized_person_id") @db.Uuid
+  relationshipType     String    @map("relationship_type") @db.VarChar(50)
+  authorizationScope   String    @map("authorization_scope") @db.VarChar(50)
+  verificationCodeHash String?   @map("verification_code_hash") @db.VarChar(255)
+  validFrom            DateTime  @map("valid_from") @db.Date
+  validUntil           DateTime? @map("valid_until") @db.Date
+  status               String    @default("ACTIVE") @db.VarChar(50)
+  notes                String?   @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  passengerProfile TransportationPassengerProfile @relation(fields: [passengerProfileId], references: [id], onDelete: Cascade)
+  authorizedPerson Person                         @relation(fields: [authorizedPersonId], references: [id], onDelete: Restrict)
+  handovers        PassengerHandover[]
+
+  @@index([tenantId])
+  @@index([passengerProfileId])
+  @@index([authorizedPersonId])
+  @@index([status])
+  @@map("passenger_handover_authorizations")
+}
+
+model TransportationTrip {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  institutionId            String    @map("institution_id") @db.Uuid
+  campusId                 String    @map("campus_id") @db.Uuid
+  routeId                  String    @map("route_id") @db.Uuid
+  vehicleId                String    @map("vehicle_id") @db.Uuid
+  driverProfileId          String    @map("driver_profile_id") @db.Uuid
+  attendantProfileId       String?   @map("attendant_profile_id") @db.Uuid
+  serviceDate              DateTime  @map("service_date") @db.Date
+  shiftType                String    @map("shift_type") @db.VarChar(50)
+  status                   String    @default("SCHEDULED") @db.VarChar(50)
+  scheduledStartTime       String    @map("scheduled_start_time") @db.VarChar(10)
+  actualStartTime          DateTime? @map("actual_start_time") @db.Timestamptz
+  actualEndTime            DateTime? @map("actual_end_time") @db.Timestamptz
+  startOdometer            Decimal?  @map("start_odometer") @db.Decimal(10, 2)
+  endOdometer              Decimal?  @map("end_odometer") @db.Decimal(10, 2)
+  passengerCountExpected   Int       @default(0) @map("passenger_count_expected")
+  passengerCountBoarded    Int       @default(0) @map("passenger_count_boarded")
+  passengerCountDroppedOff Int       @default(0) @map("passenger_count_dropped_off")
+  passengerCountNoShow     Int       @default(0) @map("passenger_count_no_show")
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant           Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  institution      Institution               @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  campus           Campus                    @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  route            TransportationRoute       @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  vehicle          TransportationVehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverProfile    DriverProfile             @relation(fields: [driverProfileId], references: [id], onDelete: Cascade)
+  attendantProfile AttendantProfile?         @relation(fields: [attendantProfileId], references: [id], onDelete: SetNull)
+  manifestEntries  TripManifestEntry[]
+  stopVisits       TripStopVisit[]
+  tripEvents       PassengerTripEvent[]
+  handovers        PassengerHandover[]
+  exceptions       TransportationException[]
+
+  @@unique([tenantId, routeId, serviceDate, shiftType], map: "uq_trip_tenant_route_date_shift")
+  @@index([tenantId])
+  @@index([vehicleId])
+  @@index([driverProfileId])
+  @@index([serviceDate])
+  @@index([status])
+  @@map("transportation_trips")
+}
+
+model TripManifestEntry {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  tripId             String    @map("trip_id") @db.Uuid
+  passengerProfileId String    @map("passenger_profile_id") @db.Uuid
+  pickupStopId       String?   @map("pickup_stop_id") @db.Uuid
+  dropoffStopId      String?   @map("dropoff_stop_id") @db.Uuid
+  requiresHandover   Boolean   @default(false) @map("requires_handover")
+  boardingStatus     String    @default("PENDING") @map("boarding_status") @db.VarChar(50)
+  boardedAt          DateTime? @map("boarded_at") @db.Timestamptz
+  droppedOffAt       DateTime? @map("dropped_off_at") @db.Timestamptz
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  trip             TransportationTrip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  passengerProfile TransportationPassengerProfile @relation(fields: [passengerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, passengerProfileId], map: "uq_manifest_trip_passenger")
+  @@index([tenantId])
+  @@index([tripId])
+  @@index([boardingStatus])
+  @@map("trip_manifest_entries")
+}
+
+model TripStopVisit {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  tripId              String    @map("trip_id") @db.Uuid
+  routeStopId         String    @map("route_stop_id") @db.Uuid
+  sequenceNumber      Int       @map("sequence_number")
+  scheduledTime       String?   @map("scheduled_time") @db.VarChar(10)
+  actualArrivalTime   DateTime? @map("actual_arrival_time") @db.Timestamptz
+  actualDepartureTime DateTime? @map("actual_departure_time") @db.Timestamptz
+  dwellTimeSeconds    Int?      @map("dwell_time_seconds")
+  status              String    @default("SCHEDULED") @db.VarChar(50)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  trip       TransportationTrip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  routeStop  RouteStop            @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
+  tripEvents PassengerTripEvent[]
+
+  @@unique([tripId, routeStopId], map: "uq_stop_visit_trip_stop")
+  @@index([tenantId])
+  @@index([tripId])
+  @@map("trip_stop_visits")
+}
+
+model PassengerTripEvent {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  tripId             String   @map("trip_id") @db.Uuid
+  passengerProfileId String   @map("passenger_profile_id") @db.Uuid
+  stopVisitId        String?  @map("stop_visit_id") @db.Uuid
+  eventType          String   @map("event_type") @db.VarChar(50)
+  recordedAt         DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+  recordedByUserId   String   @map("recorded_by_user_id") @db.Uuid
+  latitude           Decimal? @db.Decimal(10, 7)
+  longitude          Decimal? @db.Decimal(10, 7)
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  trip             TransportationTrip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  passengerProfile TransportationPassengerProfile @relation(fields: [passengerProfileId], references: [id], onDelete: Cascade)
+  stopVisit        TripStopVisit?                 @relation(fields: [stopVisitId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tripId])
+  @@index([passengerProfileId])
+  @@index([eventType])
+  @@map("passenger_trip_events")
+}
+
+model PassengerHandover {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  tripId             String   @map("trip_id") @db.Uuid
+  passengerProfileId String   @map("passenger_profile_id") @db.Uuid
+  authorizationId    String   @map("authorization_id") @db.Uuid
+  receivedByPersonId String   @map("received_by_person_id") @db.Uuid
+  verifiedByUserId   String   @map("verified_by_user_id") @db.Uuid
+  handoverTimestamp  DateTime @default(now()) @map("handover_timestamp") @db.Timestamptz
+  method             String   @db.VarChar(50)
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  trip             TransportationTrip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  passengerProfile TransportationPassengerProfile @relation(fields: [passengerProfileId], references: [id], onDelete: Cascade)
+  authorization    PassengerHandoverAuthorization @relation(fields: [authorizationId], references: [id], onDelete: Restrict)
+  receivedByPerson Person                         @relation(fields: [receivedByPersonId], references: [id], onDelete: Restrict)
+
+  @@unique([tripId, passengerProfileId], map: "uq_handover_trip_passenger")
+  @@index([tenantId])
+  @@index([authorizationId])
+  @@index([receivedByPersonId])
+  @@map("passenger_handovers")
+}
+
+model TransportationException {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  tripId             String?   @map("trip_id") @db.Uuid
+  passengerProfileId String?   @map("passenger_profile_id") @db.Uuid
+  vehicleId          String?   @map("vehicle_id") @db.Uuid
+  driverProfileId    String?   @map("driver_profile_id") @db.Uuid
+  category           String    @db.VarChar(50)
+  severity           String    @db.VarChar(50)
+  description        String    @db.Text
+  resolved           Boolean   @default(false)
+  resolvedAt         DateTime? @map("resolved_at") @db.Timestamptz
+  resolvedByUserId   String?   @map("resolved_by_user_id") @db.Uuid
+  resolutionNotes    String?   @map("resolution_notes") @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  trip             TransportationTrip?             @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  passengerProfile TransportationPassengerProfile? @relation(fields: [passengerProfileId], references: [id], onDelete: SetNull)
+  vehicle          TransportationVehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  driverProfile    DriverProfile?                  @relation(fields: [driverProfileId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tripId])
+  @@index([category])
+  @@index([resolved])
+  @@map("transportation_exceptions")
 }
