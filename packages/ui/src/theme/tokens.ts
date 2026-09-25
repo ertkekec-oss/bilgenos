@@ -1,20 +1,45 @@
 export const BILGEN_TOKENS = {
   colors: {
     surface: '#FFFFFF',
-    canvas: '#F7F8FA',
-    gridHeader: '#F1F3F5',
-    border: '#D9DDE3',
-    borderStrong: '#B8BEC7',
+    surfaceSubtle: '#F8FAFC',
+    canvas: '#F1F5F9',
+    gridHeader: '#F8FAFC',
+    border: '#E2E8F0',
+    borderStrong: '#CBD5E1',
 
-    textPrimary: '#20242A',
-    textSecondary: '#626A73',
-    textMuted: '#8A929C',
+    // Periodya Sidebar Palette (Deep Slate Navy)
+    sidebarBg: '#0F172A',
+    sidebarCard: '#1E293B',
+    sidebarHover: '#293548',
+    sidebarActive: '#2563EB',
+    sidebarText: '#94A3B8',
+    sidebarTextActive: '#FFFFFF',
+    sidebarBorder: '#1E293B',
 
-    accent: '#0F4C81', // Dark corporate blue
-    accentHover: '#0C3D68',
-    danger: '#C92A2A', // Controlled corporate red
-    warning: '#D9730D', // Amber
-    success: '#2B8A3E', // Dark green
+    textPrimary: '#0F172A',
+    textSecondary: '#475569',
+    textMuted: '#94A3B8',
+
+    accent: '#2563EB', // Periodya Corporate Royal Blue
+    accentHover: '#1D4ED8',
+    accentLight: '#EFF6FF',
+    accentBorder: '#BFDBFE',
+
+    danger: '#EF4444',
+    dangerLight: '#FEF2F2',
+    dangerBorder: '#FECACA',
+
+    warning: '#F59E0B',
+    warningLight: '#FFFBEB',
+    warningBorder: '#FDE68A',
+
+    success: '#10B981',
+    successLight: '#ECFDF5',
+    successBorder: '#A7F3D0',
+
+    info: '#0EA5E9',
+    infoLight: '#F0F9FF',
+    infoBorder: '#BAE6FD',
   },
   typography: {
     fontFamilySans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -22,8 +47,17 @@ export const BILGEN_TOKENS = {
   },
   dimensions: {
     rowHeight: '34px',
-    headerHeight: '36px',
+    headerHeight: '38px',
     borderWidth: '1px',
-    radius: '0px',
+    radius: '4px',
+    radiusSm: '2px',
+    radiusMd: '6px',
+    radiusLg: '8px',
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
+    drawer: '-4px 0 24px -2px rgb(0 0 0 / 0.15)',
   },
 } as const;
