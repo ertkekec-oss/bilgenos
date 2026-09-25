@@ -6,7 +6,6 @@ import { BILGEN_TOKENS } from '@bilgenos/ui';
 interface AppHeaderProps {
   currentModuleTitle: string;
   currentSubTabTitle: string;
-  onQuickAction?: () => void;
 }
 
 export function AppHeader({
@@ -16,7 +15,7 @@ export function AppHeader({
   return (
     <header
       style={{
-        height: '46px',
+        height: '48px',
         backgroundColor: '#FFFFFF',
         borderBottom: `1px solid ${BILGEN_TOKENS.colors.border}`,
         display: 'flex',
@@ -27,7 +26,7 @@ export function AppHeader({
       }}
     >
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
         <span style={{ color: BILGEN_TOKENS.colors.textMuted, fontWeight: 500 }}>
           {currentModuleTitle}
         </span>
@@ -37,71 +36,119 @@ export function AppHeader({
         </span>
       </div>
 
-      {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* Security Shield Indicator */}
+      {/* Right Controls - Kurumsal Yönetici Çubuğu */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Aktif Kampüs Seçici */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            backgroundColor: BILGEN_TOKENS.colors.successLight,
-            border: `1px solid ${BILGEN_TOKENS.colors.successBorder}`,
-            fontSize: '11px',
-            fontWeight: 700,
-            color: BILGEN_TOKENS.colors.success,
+            padding: '4px 10px',
+            borderRadius: '5px',
+            backgroundColor: '#F8FAFC',
+            border: `1px solid ${BILGEN_TOKENS.colors.border}`,
+            fontSize: '12px',
+            fontWeight: 600,
+            color: BILGEN_TOKENS.colors.textPrimary,
+            cursor: 'pointer',
           }}
         >
-          <span>🛡️</span>
-          <span>DEFENSE-IN-DEPTH: ACTIVE</span>
+          <span>🏫</span>
+          <span>Bilgen Koleji (Merkez Kampüs)</span>
+          <span style={{ fontSize: '9px', color: '#94A3B8' }}>▼</span>
         </div>
 
-        {/* Database Indicator */}
+        {/* Dönem Bilgisi */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
-            fontSize: '11px',
-            color: BILGEN_TOKENS.colors.textSecondary,
-            fontFamily: BILGEN_TOKENS.typography.fontFamilyMono,
+            gap: '6px',
+            padding: '4px 10px',
+            borderRadius: '5px',
+            backgroundColor: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            fontSize: '11.5px',
+            fontWeight: 600,
+            color: '#1D4ED8',
           }}
         >
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-          <span>Neon PostgreSQL</span>
+          <span>📅</span>
+          <span>2026 - 2027 Eğitim Dönemi</span>
         </div>
 
-        {/* User Chip */}
+        {/* Bildirim Zili */}
+        <div
+          style={{
+            position: 'relative',
+            cursor: 'pointer',
+            padding: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#F8FAFC',
+            border: `1px solid ${BILGEN_TOKENS.colors.border}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          title="3 bekleyen operasyonel bildirim"
+        >
+          <span style={{ fontSize: '14px' }}>🔔</span>
+          <span
+            style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              width: '15px',
+              height: '15px',
+              borderRadius: '50%',
+              backgroundColor: '#EF4444',
+              color: '#FFFFFF',
+              fontSize: '9px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            3
+          </span>
+        </div>
+
+        {/* Kullanıcı Profili */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            paddingLeft: '12px',
+            gap: '9px',
+            paddingLeft: '14px',
             borderLeft: `1px solid ${BILGEN_TOKENS.colors.border}`,
           }}
         >
           <div
             style={{
-              width: '26px',
-              height: '26px',
+              width: '28px',
+              height: '28px',
               borderRadius: '50%',
-              backgroundColor: '#E2E8F0',
+              backgroundColor: '#1E293B',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '11px',
               fontWeight: 700,
-              color: '#475569',
+              color: '#FFFFFF',
             }}
           >
             KB
           </div>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: BILGEN_TOKENS.colors.textPrimary }}>
-            Kerem Bilgen (Admin)
-          </span>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: BILGEN_TOKENS.colors.textPrimary, lineHeight: 1.1 }}>
+              Kerem Bilgen
+            </div>
+            <div style={{ fontSize: '10.5px', color: BILGEN_TOKENS.colors.textMuted, lineHeight: 1.1, marginTop: '2px' }}>
+              Genel Müdür (Süper Admin)
+            </div>
+          </div>
         </div>
       </div>
     </header>
